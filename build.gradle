@@ -1,0 +1,15 @@
+subprojects {
+    group = 'com.healthsys'
+    version = '0.0.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+
+    // Garante que o bootJar sempre gere "app.jar" — simplifica o COPY no Dockerfile
+    plugins.withId('org.springframework.boot') {
+        tasks.named('bootJar') {
+            archiveFileName = 'app.jar'
+        }
+    }
+}

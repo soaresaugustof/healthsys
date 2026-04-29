@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>HealthSys — Guia Docker Desktop</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13.5px;
+      color: #1e293b;
+      background: #fff;
+      line-height: 1.7;
+    }
+
+    /* ── CAPA ─────────────────────────────────────────────── */
+    .cover {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0ea5e9 100%);
+      color: #fff;
+      page-break-after: always;
+    }
+    .cover .whale { font-size: 80px; margin-bottom: 24px; }
+    .cover h1 { font-size: 46px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
+    .cover h2 { font-size: 19px; font-weight: 400; opacity: .8; margin-bottom: 40px; }
+    .cover .badge {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 99px;
+      padding: 6px 18px;
+      font-size: 13px;
+      margin: 4px;
+      display: inline-block;
+    }
+    .cover .version { margin-top: 48px; opacity: .5; font-size: 12px; }
+
+    /* ── PÁGINA ───────────────────────────────────────────── */
+    .page {
+      padding: 60px 80px;
+      page-break-before: always;
+    }
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      border-bottom: 3px solid #0ea5e9;
+      padding-bottom: 14px;
+      margin-bottom: 36px;
+    }
+    .page-title span { color: #0ea5e9; }
+
+    /* ── SEÇÃO ────────────────────────────────────────────── */
+    .section { margin-bottom: 40px; }
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title .icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── PASSO ────────────────────────────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: 16px; }
+    .step {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-body { flex: 1; }
+    .step-body h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .step-body p  { font-size: 13px; color: #475569; margin-bottom: 6px; }
+    .step-body p:last-child { margin-bottom: 0; }
+
+    /* ── TERMINAL ─────────────────────────────────────────── */
+    .terminal {
+      background: #0f172a;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .terminal-bar {
+      background: #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot-r { background: #f87171; }
+    .dot-y { background: #fbbf24; }
+    .dot-g { background: #4ade80; }
+    .terminal-label { margin-left: 8px; font-size: 11px; color: #64748b; font-family: monospace; }
+    .terminal-body {
+      padding: 14px 18px;
+      font-family: 'Consolas', monospace;
+      font-size: 12.5px;
+      line-height: 1.8;
+      color: #e2e8f0;
+    }
+    .cmd  { color: #7dd3fc; }
+    .cmt  { color: #475569; font-style: italic; }
+    .ok   { color: #4ade80; }
+    .warn { color: #fbbf24; }
+    .err  { color: #f87171; }
+    .out  { color: #94a3b8; }
+
+    /* ── CALLOUT ──────────────────────────────────────────── */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .callout-info  { background: #f0f9ff; border-left: 4px solid #0ea5e9; color: #0c4a6e; }
+    .callout-warn  { background: #fffbeb; border-left: 4px solid #f59e0b; color: #78350f; }
+    .callout-ok    { background: #f0fdf4; border-left: 4px solid #22c55e; color: #14532d; }
+    .callout-err   { background: #fef2f2; border-left: 4px solid #ef4444; color: #7f1d1d; }
+    .callout strong { display: block; font-weight: 700; margin-bottom: 4px; }
+
+    /* ── TABELA ───────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 13px;
+    }
+    th {
+      background: #f8fafc;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #64748b;
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+    }
+    td {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+    code {
+      background: #f1f5f9;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      color: #0f172a;
+    }
+
+    /* ── DIAGRAMA ─────────────────────────────────────────── */
+    .diagram {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 2;
+      color: #334155;
+      margin: 12px 0;
+    }
+    .diagram .box {
+      display: inline-block;
+      background: #0f172a;
+      color: #7dd3fc;
+      border-radius: 6px;
+      padding: 2px 12px;
+      font-size: 12px;
+    }
+    .diagram .infra {
+      display: inline-block;
+      background: #1e3a5f;
+      color: #bae6fd;
+      border-radius: 6px;
+      padding: 2px 12px;
+    }
+    .diagram .arrow { color: #94a3b8; }
+
+    /* ── IMAGEM MOCK ──────────────────────────────────────── */
+    .ui-mock {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 12px 0;
+      color: #e2e8f0;
+      font-size: 12px;
+      font-family: 'Consolas', monospace;
+    }
+    .ui-mock .topbar {
+      background: #0f172a;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-bottom: 14px;
+      color: #7dd3fc;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .ui-mock .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+    .ui-mock .row:hover { background: rgba(255,255,255,.05); }
+    .ui-mock .status-up   { color: #4ade80; font-size: 11px; }
+    .ui-mock .status-down { color: #f87171; font-size: 11px; }
+    .ui-mock .svc-name { flex: 1; }
+    .ui-mock .port { color: #94a3b8; font-size: 11px; }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     CAPA
+══════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="whale">🐳</div>
+  <h1>Docker Desktop</h1>
+  <h2>Guia completo para rodar o HealthSys</h2>
+  <div>
+    <span class="badge">Primeira vez</span>
+    <span class="badge">Passo a passo</span>
+    <span class="badge">Windows</span>
+  </div>
+  <p class="version">HealthSys v1.0 &nbsp;·&nbsp; 2026</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PÁGINA 1 — O QUE É O DOCKER
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-title">Seção 1 — O que é o Docker e por que usar</div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dbeafe;">💡</div>
+      Entendendo o conceito
+    </div>
+    <p style="color:#475569; margin-bottom:14px;">
+      Imagine que cada serviço do HealthSys precisa de um ambiente exato para funcionar: Java 17, variáveis de ambiente, porta de rede, banco de dados. Configurar tudo isso manualmente em cada máquina é trabalhoso e sujeito a erros.
+    </p>
+    <p style="color:#475569; margin-bottom:14px;">
+      O <strong>Docker</strong> resolve isso criando <strong>containers</strong> — ambientes isolados e portáteis que empacotam o serviço e tudo que ele precisa. O que roda na sua máquina é idêntico ao que vai rodar em produção.
+    </p>
+
+    <div class="callout callout-info">
+      <strong>Analogia simples</strong>
+      Pense num container como uma "caixa lacrada" contendo o programa + todas as suas dependências. Você só precisa dizer "abra essa caixa" e ela roda — sem instalar nada manualmente.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dcfce7;">🏗️</div>
+      Arquitetura do HealthSys no Docker
+    </div>
+    <div class="diagram">
+      <div style="margin-bottom:8px; color:#94a3b8; font-size:11px; text-transform:uppercase; letter-spacing:1px;">Rede interna Docker (healthsys_default)</div>
+      <div style="margin-left:20px;">
+        <span class="arrow">┌─</span> <span class="infra">postgres:5432</span> <span style="color:#94a3b8;">← banco de dados compartilhado</span><br/>
+        <span class="arrow">├─</span> <span class="infra">zookeeper:2181</span><br/>
+        <span class="arrow">├─</span> <span class="infra">kafka:9092</span> <span style="color:#94a3b8;">← mensageria async</span><br/>
+        <span class="arrow">├─</span> <span class="box">user-service:8081</span><br/>
+        <span class="arrow">├─</span> <span class="box">patient-service:8082</span><br/>
+        <span class="arrow">├─</span> <span class="box">triage-service:8083</span><br/>
+        <span class="arrow">├─</span> <span class="box">record-service:8084</span><br/>
+        <span class="arrow">├─</span> <span class="box">bed-service:8085</span><br/>
+        <span class="arrow">└─</span> <span class="box">api-gateway:8080</span> <span style="color:#94a3b8;">← único ponto exposto ao frontend</span>
+      </div>
+      <div style="margin-top:14px; color:#94a3b8;">
+        <span class="arrow">↑ Você (frontend / Postman)</span> acessa apenas <strong style="color:#7dd3fc;">localhost:8080</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PÁGINA 2 — INSTALAÇÃO
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-title">Seção 2 — Instalando o Docker Desktop</div>
+
+  <div class="section">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Baixe o instalador</h4>
+          <p>Acesse <strong>docker.com/products/docker-desktop</strong> e clique em <em>"Download for Windows"</em>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Execute o instalador</h4>
+          <p>Abra o arquivo baixado (<code>Docker Desktop Installer.exe</code>). Mantenha as opções padrão e clique em <em>Ok</em> até finalizar.</p>
+          <div class="callout callout-warn">
+            <strong>WSL 2 obrigatório no Windows</strong>
+            O instalador pode pedir para ativar o WSL 2 (Windows Subsystem for Linux). Aceite e reinicie o computador quando solicitado. O Docker não funciona sem ele.
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Inicie o Docker Desktop</h4>
+          <p>Após a instalação, abra o <strong>Docker Desktop</strong> pelo menu Iniciar. Aguarde o ícone da baleia 🐳 aparecer na barra de tarefas (canto inferior direito).</p>
+          <div class="callout callout-ok">
+            <strong>Docker pronto quando:</strong>
+            O ícone da baleia fica parado (sem animação) e o app mostra <em>"Docker Desktop is running"</em>.
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Verifique a instalação</h4>
+          <p>Abra o terminal (PowerShell ou CMD) e execute:</p>
+          <div class="terminal">
+            <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="terminal-label">PowerShell</span></div>
+            <div class="terminal-body">
+              <span class="cmd">docker --version</span><br/>
+              <span class="out">Docker version 27.x.x, build xxxxxxx</span><br/><br/>
+              <span class="cmd">docker-compose --version</span><br/>
+              <span class="out">Docker Compose version v2.x.x</span>
+            </div>
+          </div>
+          <p>Se aparecer as versões, está tudo instalado corretamente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PÁGINA 3 — PRIMEIRA EXECUÇÃO
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-title">Seção 3 — Rodando o HealthSys pela <span>primeira vez</span></div>
+
+  <div class="callout callout-warn" style="margin-bottom:28px;">
+    <strong>⏱ Tempo estimado: 10–20 minutos na primeira vez</strong>
+    O Docker precisa baixar as imagens base (Java, PostgreSQL, Kafka) e compilar todos os serviços. Das próximas vezes leva menos de 1 minuto.
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Confirme que o Docker Desktop está rodando</h4>
+        <p>O ícone 🐳 deve estar na barra de tarefas sem animação. Sem isso, os comandos abaixo falham.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Abra o terminal na pasta do projeto</h4>
+        <p>No Windows Explorer, navegue até a pasta <code>healthsys</code>, clique com o botão direito em qualquer área vazia e selecione <em>"Abrir no Terminal"</em>. Ou abra o PowerShell/Git Bash e navegue:</p>
+        <div class="terminal">
+          <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="terminal-label">PowerShell / Git Bash</span></div>
+          <div class="terminal-body">
+            <span class="cmd">cd C:\Users\seu-usuario\IdeaProjects\healthsys</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Execute o comando de build e start</h4>
+        <div class="terminal">
+          <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="terminal-label">Terminal — dentro de healthsys/</span></div>
+          <div class="terminal-body">
+            <span class="cmd">docker-compose up --build</span>
+          </div>
+        </div>
+        <p>O <code>--build</code> instrui o Docker a compilar os JARs antes de subir. Necessário apenas na primeira vez ou quando o código mudar.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Acompanhe os logs no terminal</h4>
+        <p>Você verá muitas linhas rolando. Isso é normal. O processo passa por 3 fases:</p>
+        <div class="terminal">
+          <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="terminal-label">Saída esperada</span></div>
+          <div class="terminal-body">
+            <span class="cmt">── Fase 1: download das imagens base ──────────────────</span><br/>
+            <span class="out">Pulling postgres       ... done</span><br/>
+            <span class="out">Pulling kafka          ... done</span><br/>
+            <span class="out">Pulling eclipse-temurin... done</span><br/><br/>
+            <span class="cmt">── Fase 2: compilação dos serviços ────────────────────</span><br/>
+            <span class="out">Step 1/12 : FROM eclipse-temurin:17-jdk-alpine AS build</span><br/>
+            <span class="out">Task :user-service:compileJava</span><br/>
+            <span class="out">Task :user-service:bootJar</span><br/>
+            <span class="out">...</span><br/><br/>
+            <span class="cmt">── Fase 3: inicialização dos containers ───────────────</span><br/>
+            <span class="ok">postgres        | database system is ready to accept connections</span><br/>
+            <span class="ok">user-service    | Started UserServiceApplication in 8.3 seconds</span><br/>
+            <span class="ok">patient-service | Started PatientServiceApplication in 7.1 seconds</span><br/>
+            <span class="ok">api-gateway     | Started ApiGatewayApplication in 9.2 seconds</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Confirme que tudo subiu</h4>
+        <p>Quando aparecer <em>"Started XxxApplication"</em> para todos os serviços, o sistema está pronto. Abra outra aba do terminal e execute:</p>
+        <div class="terminal">
+          <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="terminal-label">Nova aba do terminal</span></div>
+          <div class="terminal-body">
+            <span class="cmd">docker-compose ps</span><br/><br/>
+            <span class="out">NAME               STATUS</span><br/>
+            <span class="ok">postgres           Up (healthy)</span><br/>
+            <span class="ok">kafka              Up (healthy)</span><br/>
+            <span class="ok">user-service       Up</span><br/>
+            <span class="ok">patient-service    Up</span><br/>
+            <span class="ok">triage-service     Up</span><br/>
+            <span class="ok">record-service     Up</span><br/>
+            <span class="ok">bed-service        Up</span><br/>
+            <span class="ok">api-gateway        Up</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PÁGINA 4 — DOCKER DESKTOP UI
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-title">Seção 4 — Usando a interface do Docker Desktop</div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#f3e8ff;">🖥️</div>
+      O que você vai ver no app
+    </div>
+
+    <div class="ui-mock">
+      <div class="topbar">🐳 Docker Desktop &nbsp;·&nbsp; Containers</div>
+      <div class="row"><span>▼</span> <span class="svc-name"><strong>healthsys</strong></span> <span class="status-up">● Running (8/8)</span></div>
+      <div class="row" style="margin-left:20px;"><span>📦</span> <span class="svc-name">api-gateway</span> <span class="port">:8080</span> <span class="status-up">● Running</span></div>
+      <div class="row" style="margin-left:20px;"><span>📦</span> <span class="svc-name">user-service</span> <span class="port">:8081</span> <span class="status-up">● Running</span></div>
+      <div class="row" style="margin-left:20px;"><span>📦</span> <span class="svc-name">patient-service</span> <span class="port">:8082</span> <span class="status-up">● Running</span></div>
+      <div class="row" style="margin-left:20px;"><span>📦</span> <span class="svc-name">triage-service</span> <span class="port">:8083</span> <span class="status-up">● Running</span></div>
+      <div class="row" style="margin-left:20px;"><span>📦</span> <span class="svc-name">record-service</span> <span class="port">:8084</span> <span class="status-up">● Running</span></div>
+      <div class="row" style="margin-left:20px;"><span>📦</span> <span class="svc-name">bed-service</span> <span class="port">:8085</span> <span class="status-up">● Running</span></div>
+      <div class="row" style="margin-left:20px;"><span>📦</span> <span class="svc-name">postgres</span> <span class="port">:5432</span> <span class="status-up">● Running</span></div>
+      <div class="row" style="margin-left:20px;"><span>📦</span> <span class="svc-name">kafka</span> <span class="port">:29092</span> <span class="status-up">● Running</span></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Ação na interface</th><th>O que faz</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Clicar no nome de um container</td><td>Abre os <strong>logs em tempo real</strong> daquele serviço</td></tr>
+        <tr><td>Botão ■ (Stop) ao lado do container</td><td>Para aquele serviço específico</td></tr>
+        <tr><td>Botão ▶ (Start)</td><td>Reinicia um serviço parado</td></tr>
+        <tr><td>Botão 🗑 (Delete)</td><td>Remove o container (não apaga o banco)</td></tr>
+        <tr><td>Aba <em>Volumes</em></td><td>Mostra o volume <code>postgres_data</code> onde os dados ficam salvos</td></tr>
+        <tr><td>Aba <em>Images</em></td><td>Lista todas as imagens baixadas</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fef9c3;">📋</div>
+      Ver logs de um serviço
+    </div>
+    <p style="color:#475569; margin-bottom:12px;">Se algo não funcionar, os logs mostram o erro. Há duas formas:</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">A</div>
+        <div class="step-body">
+          <h4>Pelo Docker Desktop</h4>
+          <p>Clique no nome do container na lista → aba <em>Logs</em>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">B</div>
+        <div class="step-body">
+          <h4>Pelo terminal</h4>
+          <div class="terminal">
+            <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+            <div class="terminal-body">
+              <span class="cmt"># Ver logs de um serviço específico:</span><br/>
+              <span class="cmd">docker-compose logs user-service</span><br/><br/>
+              <span class="cmt"># Acompanhar logs em tempo real (Ctrl+C para sair):</span><br/>
+              <span class="cmd">docker-compose logs -f user-service</span><br/><br/>
+              <span class="cmt"># Ver logs de todos os serviços:</span><br/>
+              <span class="cmd">docker-compose logs -f</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PÁGINA 5 — USO DO DIA A DIA
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-title">Seção 5 — Uso do dia a dia</div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dcfce7;">🚀</div>
+      Subir o sistema (sem mudanças de código)
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="terminal-body">
+        <span class="cmd">docker-compose up</span><br/>
+        <span class="cmt"># Sem --build: usa os containers já compilados. Muito mais rápido.</span>
+      </div>
+    </div>
+    <div class="callout callout-info" style="margin-top:8px;">
+      Você pode adicionar <code>-d</code> para rodar em background e liberar o terminal:<br/>
+      <code>docker-compose up -d</code>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dbeafe;">🔨</div>
+      Subir após mudança de código
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="terminal-body">
+        <span class="cmt"># Recompilar e subir todos:</span><br/>
+        <span class="cmd">docker-compose up --build</span><br/><br/>
+        <span class="cmt"># Recompilar apenas o serviço alterado (mais rápido):</span><br/>
+        <span class="cmd">docker-compose up --build user-service</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fce7f3;">🛑</div>
+      Parar o sistema
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="terminal-body">
+        <span class="cmt"># Parar tudo (dados do banco preservados):</span><br/>
+        <span class="cmd">docker-compose down</span><br/><br/>
+        <span class="cmt"># Parar E apagar o banco (volta ao zero):</span><br/>
+        <span class="cmd">docker-compose down -v</span><br/><br/>
+        <span class="cmt"># Ou simplesmente Ctrl+C no terminal onde está rodando</span>
+      </div>
+    </div>
+    <div class="callout callout-warn" style="margin-top:8px;">
+      <strong>Cuidado com o <code>-v</code></strong>
+      Ele apaga o volume <code>postgres_data</code> — todos os dados do banco são perdidos. Use apenas para resetar o ambiente.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fef9c3;">🔄</div>
+      Reiniciar um serviço específico
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="terminal-body">
+        <span class="cmd">docker-compose restart user-service</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#f0fdf4;">🧹</div>
+      Liberar espaço em disco
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="terminal-body">
+        <span class="cmt"># Remove containers parados, imagens sem uso e cache de build:</span><br/>
+        <span class="cmd">docker system prune</span><br/><br/>
+        <span class="cmt"># Versão mais agressiva (remove tudo não utilizado):</span><br/>
+        <span class="cmd">docker system prune -a</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PÁGINA 6 — TESTANDO A API
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-title">Seção 6 — Testando a API após subir</div>
+
+  <div class="callout callout-info" style="margin-bottom:24px;">
+    <strong>Todas as chamadas vão para localhost:8080 (API Gateway)</strong>
+    Nunca chame as portas 8081–8085 diretamente do frontend — elas são internas.
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dbeafe;">🔑</div>
+      Passo 1 — Fazer login e pegar o token
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="terminal-label">curl / PowerShell / Postman</span></div>
+      <div class="terminal-body">
+        <span class="cmt"># curl (Git Bash / Linux):</span><br/>
+        <span class="cmd">curl -X POST http://localhost:8080/api/auth/login \</span><br/>
+        <span class="cmd">  -H "Content-Type: application/json" \</span><br/>
+        <span class="cmd">  -d '{"email":"admin@healthsys.com","password":"admin123"}'</span><br/><br/>
+        <span class="cmt"># Resposta esperada:</span><br/>
+        <span class="ok">{"token":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1..."}</span>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <table>
+        <thead><tr><th>Usuário</th><th>E-mail</th><th>Senha</th><th>Perfil</th></tr></thead>
+        <tbody>
+          <tr><td>Administrador</td><td><code>admin@healthsys.com</code></td><td><code>admin123</code></td><td>Admin</td></tr>
+          <tr><td>Dr. João Silva</td><td><code>medico@healthsys.com</code></td><td><code>medico123</code></td><td>Medico</td></tr>
+          <tr><td>Enf. Ana Costa</td><td><code>enfermeiro@healthsys.com</code></td><td><code>enfermeiro123</code></td><td>Enfermeiro</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dcfce7;">✅</div>
+      Passo 2 — Usar o token nas próximas chamadas
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="terminal-body">
+        <span class="cmt"># Listar pacientes usando o token:</span><br/>
+        <span class="cmd">curl http://localhost:8080/api/patients \</span><br/>
+        <span class="cmd">  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."</span>
+      </div>
+    </div>
+
+    <div class="callout callout-info" style="margin-top:12px;">
+      <strong>Dica: use o Postman</strong>
+      É muito mais fácil do que curl. Crie uma variável <code>token</code>, cole o valor retornado pelo login, e use <code>Bearer {{token}}</code> em todas as requisições.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fce7f3;">🛏️</div>
+      Verificar leitos (sem cadastro manual)
+    </div>
+    <p style="color:#475569; margin-bottom:10px;">O bed-service já popula 18 leitos automaticamente. Para confirmar:</p>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="terminal-body">
+        <span class="cmd">curl http://localhost:8080/api/beds \</span><br/>
+        <span class="cmd">  -H "Authorization: Bearer &lt;token&gt;"</span><br/><br/>
+        <span class="cmt"># Deve retornar 18 leitos (A01-A05, B01-B03, C01-C06, E01-E04)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PÁGINA 7 — PROBLEMAS COMUNS
+══════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-title">Seção 7 — Problemas comuns e soluções</div>
+
+  <div class="section">
+    <div class="callout callout-err" style="margin-bottom:16px;">
+      <strong>❌ "Cannot connect to the Docker daemon"</strong>
+      O Docker Desktop não está aberto. Abra o app e aguarde a baleia parar de animar.
+    </div>
+
+    <div class="callout callout-err" style="margin-bottom:16px;">
+      <strong>❌ "Port is already allocated" / "address already in use"</strong>
+      Alguma porta (5432, 8080, etc.) já está sendo usada por outro programa. Soluções:<br/><br/>
+      <code>docker-compose down</code> para garantir que não há containers antigos rodando.<br/>
+      Ou verifique e feche o programa que usa a porta (ex: PostgreSQL local na porta 5432).
+    </div>
+
+    <div class="callout callout-err" style="margin-bottom:16px;">
+      <strong>❌ Serviço fica reiniciando (Restarting)</strong>
+      O serviço travou ao iniciar. Veja os logs para o erro real:<br/>
+      <code>docker-compose logs nome-do-servico</code>
+    </div>
+
+    <div class="callout callout-err" style="margin-bottom:16px;">
+      <strong>❌ "Connection refused" ao chamar localhost:8080</strong>
+      O api-gateway ainda não terminou de subir. Aguarde todos os "Started XxxApplication" aparecerem nos logs. O gateway é o último a subir.
+    </div>
+
+    <div class="callout callout-err" style="margin-bottom:16px;">
+      <strong>❌ Build demora mais de 20 minutos ou trava</strong>
+      Pode ser limite de memória. No Docker Desktop vá em:<br/>
+      <em>Settings → Resources → Memory</em> → aumente para pelo menos <strong>4 GB</strong>.
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>⚠️ Mudei o código mas o comportamento não mudou</strong>
+      Você precisa reconstruir o container. Execute:<br/>
+      <code>docker-compose up --build nome-do-servico</code>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fef9c3;">♻️</div>
+      Reset completo do ambiente
+    </div>
+    <p style="color:#475569; margin-bottom:10px;">Se algo estiver muito errado e quiser começar do zero:</p>
+    <div class="terminal">
+      <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="terminal-body">
+        <span class="cmt"># Para tudo e apaga volumes (banco zerado):</span><br/>
+        <span class="cmd">docker-compose down -v</span><br/><br/>
+        <span class="cmt"># Remove imagens antigas para forçar redownload:</span><br/>
+        <span class="cmd">docker-compose down --rmi local</span><br/><br/>
+        <span class="cmt"># Sobe tudo do zero:</span><br/>
+        <span class="cmd">docker-compose up --build</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dcfce7;">🔍</div>
+      Referência rápida de comandos
+    </div>
+    <table>
+      <thead><tr><th>Comando</th><th>O que faz</th></tr></thead>
+      <tbody>
+        <tr><td><code>docker-compose up --build</code></td><td>Compila e sobe tudo (1ª vez ou após mudança de código)</td></tr>
+        <tr><td><code>docker-compose up</code></td><td>Sobe sem recompilar (dia a dia)</td></tr>
+        <tr><td><code>docker-compose up -d</code></td><td>Sobe em background (libera terminal)</td></tr>
+        <tr><td><code>docker-compose down</code></td><td>Para tudo, preserva o banco</td></tr>
+        <tr><td><code>docker-compose down -v</code></td><td>Para tudo e apaga o banco</td></tr>
+        <tr><td><code>docker-compose ps</code></td><td>Status de todos os containers</td></tr>
+        <tr><td><code>docker-compose logs -f &lt;serviço&gt;</code></td><td>Logs em tempo real de um serviço</td></tr>
+        <tr><td><code>docker-compose restart &lt;serviço&gt;</code></td><td>Reinicia um serviço</td></tr>
+        <tr><td><code>docker-compose up --build &lt;serviço&gt;</code></td><td>Recompila apenas um serviço</td></tr>
+        <tr><td><code>docker system prune</code></td><td>Libera espaço em disco</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:48px; text-align:center; color:#94a3b8; font-size:12px; border-top:1px solid #e2e8f0; padding-top:20px;">
+    HealthSys &nbsp;·&nbsp; Guia Docker Desktop v1.0 &nbsp;·&nbsp; 2026
+  </div>
+</div>
+
+</body>
+</html>

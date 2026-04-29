@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthSys – Guia de Integração Backend</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #2563eb;
+      --dark:    #0f172a;
+      --text:    #1e293b;
+      --muted:   #64748b;
+      --border:  #e2e8f0;
+      --bg:      #f8fafc;
+      --green:   #16a34a;
+      --red:     #dc2626;
+      --amber:   #d97706;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+      line-height: 1.75;
+    }
+
+    /* ── COVER ── */
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--dark);
+      color: #fff;
+      page-break-after: always;
+    }
+    .cover-top {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 60px 40px;
+      text-align: center;
+    }
+    .cover-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(37,99,235,0.2);
+      border: 1px solid rgba(37,99,235,0.4);
+      color: #93c5fd;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .cover h1 {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .cover h1 span { color: var(--blue); }
+    .cover .lead {
+      font-size: 18px;
+      color: #94a3b8;
+      max-width: 560px;
+      line-height: 1.6;
+      margin-bottom: 48px;
+    }
+    .cover-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #1e293b;
+      border-top: 1px solid #1e293b;
+    }
+    .cover-stat {
+      background: #0f172a;
+      padding: 28px 32px;
+      text-align: center;
+    }
+    .cover-stat .num { font-size: 32px; font-weight: 900; color: var(--blue); }
+    .cover-stat .lbl { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+    /* ── LAYOUT ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 64px 72px;
+    }
+    .page + .page { border-top: 1px solid var(--border); }
+
+    /* ── TOC ── */
+    .toc { display: flex; flex-direction: column; gap: 4px; margin-top: 24px; }
+    .toc-group { margin-top: 16px; }
+    .toc-group-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px; }
+    .toc-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text);
+      transition: background .15s;
+    }
+    .toc-item:hover { background: var(--bg); }
+    .toc-num {
+      width: 24px; height: 24px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .toc-item .dots { flex: 1; border-bottom: 1px dotted var(--border); height: 1px; position: relative; top: -2px; }
+    .toc-item .pg { font-size: 12px; color: var(--muted); }
+
+    /* ── SECTION ── */
+    .sec-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--blue);
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+    .sec-desc { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
+    h3 { font-size: 17px; font-weight: 700; color: var(--text); margin: 32px 0 12px; }
+    h4 { font-size: 14px; font-weight: 700; color: #334155; margin: 20px 0 8px; }
+    p  { color: #475569; margin-bottom: 12px; }
+    ul, ol { padding-left: 20px; color: #475569; margin-bottom: 12px; }
+    li { margin-bottom: 6px; }
+
+    /* ── ENDPOINT CARD ── */
+    .endpoint-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .method {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      min-width: 56px;
+    }
+    .method.GET    { background: #dcfce7; color: #166534; }
+    .method.POST   { background: #dbeafe; color: #1e40af; }
+    .method.PUT    { background: #fef9c3; color: #854d0e; }
+    .method.DELETE { background: #fee2e2; color: #991b1b; }
+    .endpoint-path {
+      font-family: 'Consolas', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .endpoint-auth {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .lock { font-size: 13px; }
+    .endpoint-body { padding: 20px; }
+    .endpoint-desc { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+
+    /* ── TABS ── */
+    .tab-row { display: flex; gap: 2px; margin-bottom: 12px; }
+    .tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    /* ── CODE ── */
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 18px 22px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-family: 'Consolas', 'Cascadia Code', monospace;
+      line-height: 1.65;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+    code {
+      background: #eff6ff;
+      color: var(--blue);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 12.5px;
+      font-family: 'Consolas', monospace;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+
+    /* syntax */
+    .k  { color: #93c5fd; }           /* keyword */
+    .s  { color: #86efac; }           /* string */
+    .n  { color: #fca5a5; }           /* number / bool */
+    .c  { color: #475569; font-style: italic; } /* comment */
+    .t  { color: #f9a8d4; }           /* type */
+    .f  { color: #6ee7b7; }           /* function */
+    .p  { color: #fbbf24; }           /* property */
+    .v  { color: #e2e8f0; }           /* value/variable */
+
+    /* ── FIELD TABLE ── */
+    table { width: 100%; border-collapse: collapse; margin: 14px 0 20px; font-size: 13px; }
+    th {
+      background: var(--bg);
+      color: var(--muted);
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td { padding: 9px 14px; border: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: #fafafa; }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge.required  { background: #fee2e2; color: #991b1b; }
+    .badge.optional  { background: #f1f5f9; color: #475569; }
+    .badge.new       { background: #dcfce7; color: #166534; }
+    .badge.pending   { background: #fef9c3; color: #92400e; }
+    .badge.done      { background: #dbeafe; color: #1e40af; }
+    .badge.string    { background: #ede9fe; color: #5b21b6; }
+    .badge.number    { background: #fef3c7; color: #92400e; }
+    .badge.boolean   { background: #ecfdf5; color: #065f46; }
+    .badge.object    { background: #fce7f3; color: #9d174d; }
+    .badge.array     { background: #e0f2fe; color: #0369a1; }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-left: 4px solid;
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      margin: 16px 0;
+      font-size: 13.5px;
+    }
+    .callout.info    { border-color: var(--blue);  background: #eff6ff;  color: #1e40af; }
+    .callout.warn    { border-color: var(--amber); background: #fffbeb;  color: #92400e; }
+    .callout.success { border-color: var(--green); background: #ecfdf5;  color: #065f46; }
+    .callout.danger  { border-color: var(--red);   background: #fef2f2;  color: #991b1b; }
+    .callout strong  { font-weight: 700; }
+
+    /* ── STATUS CHIPS ── */
+    .status-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .status-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── FLOW STEPS ── */
+    .flow { display: flex; flex-direction: column; gap: 0; margin: 16px 0; }
+    .flow-step { display: flex; gap: 16px; }
+    .flow-left { display: flex; flex-direction: column; align-items: center; }
+    .flow-circle {
+      width: 32px; height: 32px; flex-shrink: 0;
+      background: var(--blue); color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+    }
+    .flow-line { flex: 1; width: 2px; background: var(--border); margin: 4px 0; }
+    .flow-step:last-child .flow-line { display: none; }
+    .flow-content { padding: 4px 0 24px; }
+    .flow-content strong { font-size: 14px; color: var(--text); }
+    .flow-content p { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+
+    /* ── DIVIDER ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    /* ── PRINT ── */
+    @media print {
+      body { font-size: 12px; }
+      .cover { min-height: 100vh; page-break-after: always; }
+      .page { padding: 40px 48px; }
+      pre { font-size: 11px; }
+      button { display: none !important; }
+    }
+    @page { margin: 0; size: A4; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ CAPA ══════════════ -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-badge">
+      <span>⚡</span> Guia de Integração
+    </div>
+    <h1>HealthSys<br /><span>Backend Guide</span></h1>
+    <p class="lead">
+      Especificação completa dos contratos de API esperados pelo frontend React.
+      Use este documento para implementar ou ajustar os controllers Spring Boot.
+    </p>
+  </div>
+  <div class="cover-grid">
+    <div class="cover-stat">
+      <div class="num">11</div>
+      <div class="lbl">Endpoints</div>
+    </div>
+    <div class="cover-stat">
+      <div class="num">4</div>
+      <div class="lbl">Recursos</div>
+    </div>
+    <div class="cover-stat">
+      <div class="num">2</div>
+      <div class="lbl">Controllers Pendentes</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ÍNDICE ══════════════ -->
+<div class="page">
+  <div class="sec-label">Navegação</div>
+  <h2>Índice</h2>
+  <p class="sec-desc">Clique em qualquer seção para navegar diretamente.</p>
+
+  <div class="toc">
+    <div class="toc-group">
+      <div class="toc-group-label">Visão Geral</div>
+      <a href="#overview" class="toc-item"><span class="toc-num">1</span> Visão Geral do Projeto <span class="dots"></span><span class="pg">3</span></a>
+      <a href="#auth-flow" class="toc-item"><span class="toc-num">2</span> Fluxo de Autenticação JWT <span class="dots"></span><span class="pg">4</span></a>
+      <a href="#request-format" class="toc-item"><span class="toc-num">3</span> Formato das Requisições e Respostas <span class="dots"></span><span class="pg">5</span></a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Endpoints Implementados</div>
+      <a href="#auth" class="toc-item"><span class="toc-num">4</span> Auth — POST /api/auth/login <span class="dots"></span><span class="pg">6</span></a>
+      <a href="#patients" class="toc-item"><span class="toc-num">5</span> Patients — GET e POST /api/patients <span class="dots"></span><span class="pg">7</span></a>
+      <a href="#triage" class="toc-item"><span class="toc-num">6</span> Triage — GET e POST /api/triage <span class="dots"></span><span class="pg">9</span></a>
+      <a href="#users" class="toc-item"><span class="toc-num">7</span> Users — /api/users <span class="dots"></span><span class="pg">11</span></a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Endpoints Pendentes (a implementar)</div>
+      <a href="#beds" class="toc-item"><span class="toc-num">8</span> Beds — GET e PUT /api/beds (pendente) <span class="dots"></span><span class="pg">12</span></a>
+      <a href="#records" class="toc-item"><span class="toc-num">9</span> Records — GET /api/records (pendente) <span class="dots"></span><span class="pg">14</span></a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Configuração</div>
+      <a href="#cors" class="toc-item"><span class="toc-num">10</span> CORS <span class="dots"></span><span class="pg">15</span></a>
+      <a href="#errors" class="toc-item"><span class="toc-num">11</span> Tratamento de Erros <span class="dots"></span><span class="pg">16</span></a>
+      <a href="#checklist" class="toc-item"><span class="toc-num">12</span> Checklist de Integração <span class="dots"></span><span class="pg">17</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 1. OVERVIEW ══════════════ -->
+<div class="page" id="overview">
+  <div class="sec-label">Seção 1</div>
+  <h2>Visão Geral do Projeto</h2>
+  <p class="sec-desc">O que o frontend é, como ele funciona e o que ele espera do backend.</p>
+
+  <h3>Stack do Frontend</h3>
+  <table>
+    <tr><th>Tecnologia</th><th>Versão</th><th>Papel</th></tr>
+    <tr><td>React</td><td>19.x</td><td>Framework de UI</td></tr>
+    <tr><td>TypeScript</td><td>5.x</td><td>Tipagem estática</td></tr>
+    <tr><td>Vite</td><td>6.x</td><td>Build tool / dev server</td></tr>
+    <tr><td>TailwindCSS</td><td>4.x</td><td>Estilização</td></tr>
+    <tr><td>Fetch API</td><td>nativo</td><td>Chamadas HTTP (sem axios)</td></tr>
+  </table>
+
+  <h3>Módulos da aplicação</h3>
+  <table>
+    <tr><th>Tela</th><th>Rota (tab)</th><th>Endpoints consumidos</th></tr>
+    <tr><td>Login</td><td>—</td><td>POST /api/auth/login</td></tr>
+    <tr><td>Dashboard</td><td>dashboard</td><td>GET /api/patients, GET /api/triage, GET /api/beds</td></tr>
+    <tr><td>Pacientes</td><td>patients</td><td>GET /api/patients, POST /api/patients</td></tr>
+    <tr><td>Prontuários</td><td>records</td><td>GET /api/records</td></tr>
+    <tr><td>Teletriagem</td><td>triage</td><td>GET /api/triage, POST /api/triage, GET /api/patients</td></tr>
+    <tr><td>Monitoramento</td><td>monitoring</td><td>GET /api/beds, PUT /api/beds/{id}</td></tr>
+  </table>
+
+  <h3>Como o frontend faz as requisições</h3>
+  <p>Todas as chamadas passam pela função <code>apiFetch</code> em <code>src/services/api.ts</code>. Ela:</p>
+  <ul>
+    <li>Adiciona o header <code>Content-Type: application/json</code> em todas as requisições</li>
+    <li>Adiciona o header <code>Authorization: Bearer &lt;token&gt;</code> se houver token no <code>localStorage</code></li>
+    <li>Lança um erro com o texto do body da resposta se o status não for 2xx</li>
+    <li>Retorna <code>undefined</code> para respostas HTTP 204 (sem body)</li>
+  </ul>
+
+  <div class="callout info">
+    <strong>URL Base:</strong> O frontend usa <code>http://localhost:8080</code> por padrão. Pode ser sobrescrito com a variável de ambiente <code>VITE_API_URL</code> no arquivo <code>.env</code> do projeto frontend.
+  </div>
+
+  <h3>Ciclo de vida dos dados</h3>
+  <p>O frontend <strong>não usa WebSocket nem SSE</strong>. Os dados são carregados ao montar o componente (<code>useEffect</code>) e, no Dashboard, atualizados a cada <strong>30 segundos</strong> via <code>setInterval</code>. Não há atualizações em tempo real — polling simples.</p>
+</div>
+
+<!-- ══════════════ 2. AUTH FLOW ══════════════ -->
+<div class="page" id="auth-flow">
+  <div class="sec-label">Seção 2</div>
+  <h2>Fluxo de Autenticação JWT</h2>
+  <p class="sec-desc">Como o frontend gerencia sessão, tokens e logout.</p>
+
+  <h3>Fluxo completo</h3>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle">1</div><div class="flow-line"></div></div>
+      <div class="flow-content">
+        <strong>Usuário preenche email e senha</strong>
+        <p>Frontend envia <code>POST /api/auth/login</code> com body <code>{ "email": "...", "senha": "..." }</code></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle">2</div><div class="flow-line"></div></div>
+      <div class="flow-content">
+        <strong>Spring autentica e retorna JWT</strong>
+        <p>Resposta: <code>{ "token": "eyJhbGciOiJIUzI1NiJ9..." }</code></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle">3</div><div class="flow-line"></div></div>
+      <div class="flow-content">
+        <strong>Frontend armazena o token</strong>
+        <p>O JWT é salvo no <code>localStorage</code> com a chave <code>"healthsys_token"</code></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle">4</div><div class="flow-line"></div></div>
+      <div class="flow-content">
+        <strong>Decodificação do payload</strong>
+        <p>O frontend decodifica o JWT com <code>atob(token.split('.')[1])</code> e extrai o campo <code>sub</code> (email do usuário). O <code>displayName</code> é o trecho antes do <code>@</code>.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle">5</div><div class="flow-line"></div></div>
+      <div class="flow-content">
+        <strong>Todas as requisições seguintes incluem o Bearer token</strong>
+        <p>Header: <code>Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...</code></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle">6</div><div class="flow-line"></div></div>
+      <div class="flow-content">
+        <strong>Logout</strong>
+        <p>Remove o token do <code>localStorage</code> e recarrega a página. A sessão no servidor não precisa ser invalidada (stateless JWT).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <strong>Campo obrigatório no payload JWT:</strong> O frontend lê o campo <code>sub</code> do payload para identificar o usuário. O Spring já faz isso com <code>jwtUtil.generateToken(loginRequest.getEmail())</code> — o campo <code>sub</code> é o padrão da spec JWT para "subject". Certifique-se de que o <code>JwtUtil</code> inclui <code>sub</code> ao gerar o token.
+  </div>
+
+  <h3>Exemplo do payload JWT esperado</h3>
+  <pre><code>{
+  <span class="p">"sub"</span>: <span class="s">"medico@hospital.com"</span>,   <span class="c">// campo obrigatório — lido pelo frontend</span>
+  <span class="p">"iat"</span>: <span class="n">1714150000</span>,            <span class="c">// issued at (epoch)</span>
+  <span class="p">"exp"</span>: <span class="n">1714236400</span>             <span class="c">// expiration (epoch)</span>
+}</code></pre>
+
+  <h3>Recomendação: tratamento de token expirado</h3>
+  <p>O frontend ainda <strong>não trata 401 automaticamente</strong>. Recomendamos adicionar no backend uma resposta clara ao token expirado e, futuramente, implementar o redirecionamento no frontend:</p>
+  <pre><code><span class="c">// Resposta sugerida para token expirado (Spring Security)</span>
+HTTP 401 Unauthorized
+{
+  <span class="p">"error"</span>: <span class="s">"Token expirado ou inválido"</span>
+}</code></pre>
+</div>
+
+<!-- ══════════════ 3. REQUEST FORMAT ══════════════ -->
+<div class="page" id="request-format">
+  <div class="sec-label">Seção 3</div>
+  <h2>Formato das Requisições e Respostas</h2>
+  <p class="sec-desc">Padrões que o frontend segue em todas as chamadas HTTP.</p>
+
+  <h3>Headers enviados pelo frontend</h3>
+  <pre><code>Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGVtYWlsLmNvbSJ9.xxxx</code></pre>
+
+  <h3>O que o frontend espera nas respostas</h3>
+  <table>
+    <tr><th>Situação</th><th>Status HTTP</th><th>Body</th></tr>
+    <tr><td>Listagem com resultados</td><td>200</td><td>Array JSON: <code>[ {...}, {...} ]</code></td></tr>
+    <tr><td>Listagem vazia</td><td>200</td><td>Array vazio: <code>[]</code></td></tr>
+    <tr><td>Criação bem-sucedida</td><td>200 ou 201</td><td>Objeto criado com <code>id</code> preenchido</td></tr>
+    <tr><td>Atualização bem-sucedida</td><td>200 ou 204</td><td>Objeto atualizado ou vazio</td></tr>
+    <tr><td>Erro de autenticação</td><td>401</td><td>Qualquer texto (será logado no console)</td></tr>
+    <tr><td>Erro de validação / negócio</td><td>400 / 422</td><td>Qualquer texto (será exibido na tela)</td></tr>
+    <tr><td>Erro interno</td><td>500</td><td>Qualquer texto</td></tr>
+  </table>
+
+  <div class="callout info">
+    <strong>IDs como string ou número:</strong> O frontend trata o campo <code>id</code> como <code>string</code> nos tipos TypeScript, mas usa <code>String(id)</code> nas comparações. O Spring pode retornar <code>Long</code> que será serializado como número no JSON — isso é compatível, pois o JavaScript converte automaticamente ao comparar.
+  </div>
+
+  <h3>Serialização de datas</h3>
+  <p>O frontend envia e espera datas no formato <strong>ISO 8601</strong>:</p>
+  <pre><code><span class="s">"2026-04-26T14:30:00.000Z"</span>   <span class="c">// data + hora (Triage.data)</span>
+<span class="s">"1990-05-15"</span>                  <span class="c">// somente data (Patient.dataNascimento)</span></code></pre>
+
+  <div class="callout warn">
+    <strong>Jackson no Spring Boot:</strong> Para que datas LocalDate e LocalDateTime sejam serializadas corretamente como string ISO no JSON, adicione ao <code>application.properties</code>:
+    <pre style="margin-top: 10px;"><code>spring.jackson.serialization.write-dates-as-timestamps=false</code></pre>
+  </div>
+</div>
+
+<!-- ══════════════ 4. AUTH ══════════════ -->
+<div class="page" id="auth">
+  <div class="sec-label">Seção 4</div>
+  <h2>Auth — Autenticação</h2>
+  <p class="sec-desc">Controller já implementado. Verificar apenas o payload do JWT gerado.</p>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/auth/login</span>
+      <div class="endpoint-auth">🔓 Público</div>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Autentica o usuário com email e senha. Retorna um token JWT que será usado em todas as requisições subsequentes.</p>
+
+      <h4>Request Body</h4>
+      <pre><code>{
+  <span class="p">"email"</span>: <span class="s">"medico@hospital.com"</span>,
+  <span class="p">"senha"</span>: <span class="s">"minhasenha123"</span>
+}</code></pre>
+
+      <h4>Campos do Request</h4>
+      <table>
+        <tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Descrição</th></tr>
+        <tr><td><code>email</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Email do usuário cadastrado</td></tr>
+        <tr><td><code>senha</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Senha em texto plano (Spring faz o BCrypt compare)</td></tr>
+      </table>
+
+      <h4>Response — 200 OK</h4>
+      <pre><code>{
+  <span class="p">"token"</span>: <span class="s">"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtZWRpY29AaG9zcGl0YWwuY29tIiwiaWF0IjoxNzE0MTUwMDAwLCJleHAiOjE3MTQyMzY0MDB9.XXXX"</span>
+}</code></pre>
+
+      <h4>Campos do Response</h4>
+      <table>
+        <tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr>
+        <tr><td><code>token</code></td><td><span class="badge string">string</span></td><td>JWT assinado. O payload DEVE conter o campo <code>sub</code> com o email do usuário.</td></tr>
+      </table>
+
+      <h4>Erros esperados</h4>
+      <table>
+        <tr><th>Status</th><th>Situação</th></tr>
+        <tr><td>401 / 403</td><td>Credenciais inválidas — Spring Security lança <code>BadCredentialsException</code></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <strong>Status:</strong> <span class="badge done">Implementado</span> — <code>AuthController.java</code> já existe. Verificar somente se o <code>JwtUtil.generateToken()</code> inclui o campo <code>sub</code> no payload.
+  </div>
+</div>
+
+<!-- ══════════════ 5. PATIENTS ══════════════ -->
+<div class="page" id="patients">
+  <div class="sec-label">Seção 5</div>
+  <h2>Patients — Gestão de Pacientes</h2>
+  <p class="sec-desc">Dois endpoints: listar todos e criar novo. Controller já implementado.</p>
+
+  <!-- GET /api/patients -->
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/patients</span>
+      <div class="endpoint-auth"><span class="lock">🔒</span> Requer JWT</div>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Retorna a lista completa de pacientes. O frontend ordena alfabeticamente por <code>nome</code> no cliente — não é necessário ordenação no servidor.</p>
+
+      <h4>Response — 200 OK</h4>
+      <pre><code>[
+  {
+    <span class="p">"id"</span>: <span class="n">1</span>,
+    <span class="p">"nome"</span>: <span class="s">"Maria Silva"</span>,
+    <span class="p">"dataNascimento"</span>: <span class="s">"1990-05-15"</span>,
+    <span class="p">"sexo"</span>: <span class="s">"F"</span>,
+    <span class="p">"telefone"</span>: <span class="s">"(11) 99999-0000"</span>,
+    <span class="p">"email"</span>: <span class="s">"maria@email.com"</span>
+  },
+  { ... }
+]</code></pre>
+
+      <h4>Campos obrigatórios na resposta</h4>
+      <table>
+        <tr><th>Campo JSON</th><th>Tipo Java</th><th>Tipo JSON</th><th>Obrig.</th><th>Observação</th></tr>
+        <tr><td><code>id</code></td><td>Long</td><td><span class="badge number">number</span></td><td><span class="badge required">obrigatório</span></td><td>Gerado pelo banco (auto-increment)</td></tr>
+        <tr><td><code>nome</code></td><td>String</td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Nome completo. Usado como inicial do avatar</td></tr>
+        <tr><td><code>dataNascimento</code></td><td>String / LocalDate</td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Formato ISO: <code>"1990-05-15"</code></td></tr>
+        <tr><td><code>sexo</code></td><td>String / enum</td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Valores aceitos: <code>"M"</code>, <code>"F"</code>, <code>"Outro"</code></td></tr>
+        <tr><td><code>telefone</code></td><td>String</td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Qualquer formato de string</td></tr>
+        <tr><td><code>email</code></td><td>String</td><td><span class="badge string">string</span></td><td><span class="badge optional">opcional</span></td><td>Pode ser null / ausente</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- POST /api/patients -->
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/patients</span>
+      <div class="endpoint-auth"><span class="lock">🔒</span> Requer JWT</div>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Cria um novo paciente. O frontend envia somente os campos do formulário — sem <code>createdBy</code> ou qualquer referência ao usuário logado.</p>
+
+      <h4>Request Body</h4>
+      <pre><code>{
+  <span class="p">"nome"</span>: <span class="s">"Maria Silva"</span>,
+  <span class="p">"dataNascimento"</span>: <span class="s">"1990-05-15"</span>,
+  <span class="p">"sexo"</span>: <span class="s">"F"</span>,
+  <span class="p">"telefone"</span>: <span class="s">"(11) 99999-0000"</span>,
+  <span class="p">"email"</span>: <span class="s">"maria@email.com"</span>       <span class="c">// pode estar ausente</span>
+}</code></pre>
+
+      <h4>Response — 200 ou 201</h4>
+      <pre><code>{
+  <span class="p">"id"</span>: <span class="n">42</span>,                        <span class="c">// id gerado pelo banco</span>
+  <span class="p">"nome"</span>: <span class="s">"Maria Silva"</span>,
+  <span class="p">"dataNascimento"</span>: <span class="s">"1990-05-15"</span>,
+  <span class="p">"sexo"</span>: <span class="s">"F"</span>,
+  <span class="p">"telefone"</span>: <span class="s">"(11) 99999-0000"</span>,
+  <span class="p">"email"</span>: <span class="s">"maria@email.com"</span>
+}</code></pre>
+
+      <div class="callout info">
+        <strong>Após criar:</strong> O frontend chama novamente <code>GET /api/patients</code> para atualizar a tabela. O objeto retornado no POST é ignorado na tela — mas deve ser retornado com <code>id</code> para conformidade.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <strong>Status:</strong> <span class="badge done">Implementado</span> — <code>PatientController.java</code> já existe com <code>getAll()</code> e <code>create()</code>.
+  </div>
+</div>
+
+<!-- ══════════════ 6. TRIAGE ══════════════ -->
+<div class="page" id="triage">
+  <div class="sec-label">Seção 6</div>
+  <h2>Triage — Teletriagem</h2>
+  <p class="sec-desc">Dois endpoints: listar triagens e registrar nova triagem. Controller já implementado.</p>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/triage</span>
+      <div class="endpoint-auth"><span class="lock">🔒</span> Requer JWT</div>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Retorna todas as triagens. O frontend ordena por <code>data</code> decrescente e pega as 10 mais recentes para a fila de atendimento.</p>
+
+      <h4>Response — 200 OK</h4>
+      <pre><code>[
+  {
+    <span class="p">"id"</span>: <span class="n">1</span>,
+    <span class="p">"patientId"</span>: <span class="s">"42"</span>,
+    <span class="p">"patientName"</span>: <span class="s">"Maria Silva"</span>,
+    <span class="p">"nivelRisco"</span>: <span class="s">"Urgente"</span>,
+    <span class="p">"status"</span>: <span class="s">"Pendente"</span>,
+    <span class="p">"data"</span>: <span class="s">"2026-04-26T14:30:00.000Z"</span>,
+    <span class="p">"vitals"</span>: {
+      <span class="p">"temp"</span>: <span class="s">"37.2"</span>,
+      <span class="p">"heartRate"</span>: <span class="s">"85"</span>,
+      <span class="p">"saturation"</span>: <span class="s">"97"</span>,
+      <span class="p">"pressure"</span>: <span class="s">"120/80"</span>
+    }
+  }
+]</code></pre>
+
+      <h4>Campos obrigatórios na resposta</h4>
+      <table>
+        <tr><th>Campo JSON</th><th>Tipo</th><th>Obrig.</th><th>Observação</th></tr>
+        <tr><td><code>id</code></td><td><span class="badge number">number</span></td><td><span class="badge required">obrigatório</span></td><td>Identificador único</td></tr>
+        <tr><td><code>patientId</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>ID do paciente relacionado</td></tr>
+        <tr><td><code>patientName</code></td><td><span class="badge string">string</span></td><td><span class="badge optional">opcional</span></td><td>Nome do paciente. Se ausente, a tela exibe "Paciente #id"</td></tr>
+        <tr><td><code>nivelRisco</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Um dos 5 valores aceitos (veja abaixo)</td></tr>
+        <tr><td><code>status</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td><code>"Pendente"</code>, <code>"Em Atendimento"</code> ou <code>"Concluído"</code></td></tr>
+        <tr><td><code>data</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>ISO 8601 com hora: <code>"2026-04-26T14:30:00Z"</code></td></tr>
+        <tr><td><code>vitals</code></td><td><span class="badge object">object</span></td><td><span class="badge optional">opcional</span></td><td>Objeto com os sinais vitais (detalhado abaixo)</td></tr>
+      </table>
+
+      <h4>Valores aceitos para nivelRisco</h4>
+      <div class="status-row">
+        <div class="status-chip"><div class="dot" style="background:#dc2626"></div><code>"Emergência"</code></div>
+        <div class="status-chip"><div class="dot" style="background:#f97316"></div><code>"Muito Urgente"</code></div>
+        <div class="status-chip"><div class="dot" style="background:#f59e0b"></div><code>"Urgente"</code></div>
+        <div class="status-chip"><div class="dot" style="background:#22c55e"></div><code>"Pouco Urgente"</code></div>
+        <div class="status-chip"><div class="dot" style="background:#3b82f6"></div><code>"Não Urgente"</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method POST">POST</span>
+      <span class="endpoint-path">/api/triage</span>
+      <div class="endpoint-auth"><span class="lock">🔒</span> Requer JWT</div>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Registra uma nova triagem. O frontend envia os dados preenchidos no formulário de 3 etapas (identificação, sinais vitais, classificação).</p>
+
+      <h4>Request Body</h4>
+      <pre><code>{
+  <span class="p">"patientId"</span>: <span class="s">"42"</span>,                    <span class="c">// id do paciente selecionado</span>
+  <span class="p">"patientName"</span>: <span class="s">"Maria Silva"</span>,         <span class="c">// nome desnormalizado para exibição</span>
+  <span class="p">"nivelRisco"</span>: <span class="s">"Urgente"</span>,              <span class="c">// classificação Manchester</span>
+  <span class="p">"status"</span>: <span class="s">"Pendente"</span>,                 <span class="c">// sempre "Pendente" na criação</span>
+  <span class="p">"data"</span>: <span class="s">"2026-04-26T14:30:00.000Z"</span>, <span class="c">// new Date().toISOString()</span>
+  <span class="p">"vitals"</span>: {
+    <span class="p">"temp"</span>: <span class="s">"37.2"</span>,                    <span class="c">// temperatura em °C (string)</span>
+    <span class="p">"heartRate"</span>: <span class="s">"85"</span>,               <span class="c">// frequência cardíaca em bpm (string)</span>
+    <span class="p">"saturation"</span>: <span class="s">"97"</span>,              <span class="c">// saturação O2 em % (string)</span>
+    <span class="p">"pressure"</span>: <span class="s">"120/80"</span>             <span class="c">// pressão arterial (string livre)</span>
+  }
+}</code></pre>
+
+      <div class="callout warn">
+        <strong>vitals como objeto embutido:</strong> O frontend envia os sinais vitais como um objeto JSON aninhado. O modelo <code>Triage.java</code> precisa aceitar isso — pode ser um objeto <code>@Embedded</code>, um JSON armazenado como <code>String</code> com <code>@Column(columnDefinition = "TEXT")</code>, ou um relacionamento separado. A escolha é livre, desde que o GET retorne no mesmo formato.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <strong>Status:</strong> <span class="badge done">Implementado</span> — <code>TriageController.java</code> já existe. Verificar se o modelo <code>Triage.java</code> tem os campos <code>patientId</code>, <code>patientName</code>, <code>nivelRisco</code>, <code>status</code>, <code>data</code> e <code>vitals</code>.
+  </div>
+</div>
+
+<!-- ══════════════ 7. USERS ══════════════ -->
+<div class="page" id="users">
+  <div class="sec-label">Seção 7</div>
+  <h2>Users — Usuários do Sistema</h2>
+  <p class="sec-desc">Controller implementado, porém ainda não consumido pelo frontend. Disponível para uso futuro.</p>
+
+  <table>
+    <tr><th>Método</th><th>Endpoint</th><th>Descrição</th><th>Frontend usa?</th></tr>
+    <tr><td><span class="method GET" style="display:inline-flex;padding:2px 8px;">GET</span></td><td><code>/api/users</code></td><td>Lista todos os usuários</td><td>Não</td></tr>
+    <tr><td><span class="method GET" style="display:inline-flex;padding:2px 8px;">GET</span></td><td><code>/api/users/{id}</code></td><td>Busca usuário por ID</td><td>Não</td></tr>
+    <tr><td><span class="method POST" style="display:inline-flex;padding:2px 8px;">POST</span></td><td><code>/api/users</code></td><td>Cria usuário (cadastro)</td><td>Não</td></tr>
+    <tr><td><span class="method DELETE" style="display:inline-flex;padding:2px 8px;">DEL</span></td><td><code>/api/users/{id}</code></td><td>Remove usuário</td><td>Não</td></tr>
+  </table>
+
+  <div class="callout info">
+    <strong>Nota:</strong> Futuramente o frontend pode usar <code>GET /api/users</code> para a tela "Corpo Clínico" no menu lateral. Por enquanto, o botão existe mas não navega para nenhuma tela funcional.
+  </div>
+</div>
+
+<!-- ══════════════ 8. BEDS (PENDENTE) ══════════════ -->
+<div class="page" id="beds">
+  <div class="sec-label">Seção 8 — A IMPLEMENTAR</div>
+  <h2>Beds — Monitoramento de Leitos</h2>
+  <p class="sec-desc">Controller ainda não existe no backend. A tela de Monitoramento está pronta no frontend esperando estes dois endpoints.</p>
+
+  <div class="callout danger">
+    <strong>Pendente:</strong> Criar <code>BedController.java</code>, <code>Bed.java</code> (model), <code>BedRepository.java</code> e <code>BedService.java</code> seguindo o mesmo padrão dos outros controllers.
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/beds</span>
+      <div class="endpoint-auth"><span class="lock">🔒</span> Requer JWT</div>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Retorna todos os leitos. O frontend agrupa por <code>setor</code> e ordena alfabeticamente.</p>
+
+      <h4>Response esperado — 200 OK</h4>
+      <pre><code>[
+  {
+    <span class="p">"id"</span>: <span class="s">"A01"</span>,               <span class="c">// string ou number — identificador do leito</span>
+    <span class="p">"setor"</span>: <span class="s">"UTI Adulto"</span>,     <span class="c">// nome do setor — usado para agrupar na tela</span>
+    <span class="p">"status"</span>: <span class="s">"Disponível"</span>,    <span class="c">// "Disponível" | "Ocupado" | "Manutenção"</span>
+    <span class="p">"pacienteId"</span>: <span class="k">null</span>         <span class="c">// id ou nome do paciente, se ocupado</span>
+  },
+  {
+    <span class="p">"id"</span>: <span class="s">"A02"</span>,
+    <span class="p">"setor"</span>: <span class="s">"UTI Adulto"</span>,
+    <span class="p">"status"</span>: <span class="s">"Ocupado"</span>,
+    <span class="p">"pacienteId"</span>: <span class="s">"João Souza"</span>
+  },
+  { ... }
+]</code></pre>
+
+      <h4>Campos obrigatórios</h4>
+      <table>
+        <tr><th>Campo JSON</th><th>Tipo</th><th>Obrig.</th><th>Observação</th></tr>
+        <tr><td><code>id</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Exibido como rótulo do card de leito (ex: "A01", "B12")</td></tr>
+        <tr><td><code>setor</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Nome do setor. Leitos do mesmo setor são agrupados</td></tr>
+        <tr><td><code>status</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Exatamente: <code>"Disponível"</code>, <code>"Ocupado"</code> ou <code>"Manutenção"</code></td></tr>
+        <tr><td><code>pacienteId</code></td><td><span class="badge string">string</span> / null</td><td><span class="badge optional">opcional</span></td><td>Nome ou ID do paciente. Exibido quando status = "Ocupado"</td></tr>
+      </table>
+
+      <div class="callout warn">
+        <strong>Atenção ao nome do status:</strong> O frontend usa esses três valores exatos com acentuação para mapear cores. Se o backend retornar <code>"Disponivel"</code> (sem acento) ou <code>"available"</code>, o card aparecerá sem cor. Manter exatamente: <code>"Disponível"</code>, <code>"Ocupado"</code>, <code>"Manutenção"</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method PUT">PUT</span>
+      <span class="endpoint-path">/api/beds/{id}</span>
+      <div class="endpoint-auth"><span class="lock">🔒</span> Requer JWT</div>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Atualiza o status de um leito. Chamado quando o usuário clica em um leito e altera seu status no modal.</p>
+
+      <h4>Request Body</h4>
+      <pre><code>{
+  <span class="p">"status"</span>: <span class="s">"Ocupado"</span>,
+  <span class="p">"pacienteId"</span>: <span class="s">"Novo Paciente"</span>   <span class="c">// ou null se status != "Ocupado"</span>
+}</code></pre>
+
+      <h4>Response — 200 OK</h4>
+      <pre><code>{
+  <span class="p">"id"</span>: <span class="s">"A01"</span>,
+  <span class="p">"setor"</span>: <span class="s">"UTI Adulto"</span>,
+  <span class="p">"status"</span>: <span class="s">"Ocupado"</span>,
+  <span class="p">"pacienteId"</span>: <span class="s">"Novo Paciente"</span>
+}</code></pre>
+
+      <h4>Controller sugerido</h4>
+      <pre><code><span class="k">@RestController</span>
+<span class="k">@RequestMapping</span>(<span class="s">"/api/beds"</span>)
+<span class="k">@CrossOrigin</span>(origins = <span class="s">"*"</span>)
+<span class="k">public class</span> <span class="t">BedController</span> {
+
+    <span class="k">@Autowired</span>
+    <span class="k">private</span> <span class="t">BedRepository</span> bedRepository;
+
+    <span class="k">@GetMapping</span>
+    <span class="k">public</span> List&lt;<span class="t">Bed</span>&gt; <span class="f">getAll</span>() {
+        <span class="k">return</span> bedRepository.<span class="f">findAll</span>();
+    }
+
+    <span class="k">@PutMapping</span>(<span class="s">"/{id}"</span>)
+    <span class="k">public</span> <span class="t">Bed</span> <span class="f">update</span>(<span class="k">@PathVariable</span> <span class="t">Long</span> id, <span class="k">@RequestBody</span> <span class="t">Bed</span> bed) {
+        <span class="t">Bed</span> existing = bedRepository.<span class="f">findById</span>(id).<span class="f">orElseThrow</span>();
+        existing.<span class="f">setStatus</span>(bed.<span class="f">getStatus</span>());
+        existing.<span class="f">setPacienteId</span>(bed.<span class="f">getPacienteId</span>());
+        <span class="k">return</span> bedRepository.<span class="f">save</span>(existing);
+    }
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 9. RECORDS (PENDENTE) ══════════════ -->
+<div class="page" id="records">
+  <div class="sec-label">Seção 9 — A IMPLEMENTAR</div>
+  <h2>Records — Prontuários Eletrônicos</h2>
+  <p class="sec-desc">Controller ainda não existe. A tela de Prontuários está pronta no frontend aguardando este endpoint.</p>
+
+  <div class="callout danger">
+    <strong>Pendente:</strong> Criar <code>RecordController.java</code>, <code>MedicalRecord.java</code> (model) e <code>RecordRepository.java</code>.
+  </div>
+
+  <div class="endpoint-card">
+    <div class="endpoint-header">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/records</span>
+      <div class="endpoint-auth"><span class="lock">🔒</span> Requer JWT</div>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-desc">Retorna todos os prontuários. O frontend ordena por <code>date</code> decrescente e permite busca por <code>patient</code>, <code>doctor</code> e <code>type</code>.</p>
+
+      <h4>Response esperado — 200 OK</h4>
+      <pre><code>[
+  {
+    <span class="p">"id"</span>: <span class="n">1</span>,
+    <span class="p">"type"</span>: <span class="s">"Consulta Clínica"</span>,       <span class="c">// tipo do prontuário — exibido como título</span>
+    <span class="p">"patient"</span>: <span class="s">"Maria Silva"</span>,        <span class="c">// nome do paciente — usado na busca</span>
+    <span class="p">"doctor"</span>: <span class="s">"Dr. Carlos Mendes"</span>,   <span class="c">// nome do médico — usado na busca</span>
+    <span class="p">"date"</span>: <span class="s">"2026-04-20T10:00:00Z"</span>   <span class="c">// data do registro — usado para ordenar</span>
+  }
+]</code></pre>
+
+      <h4>Campos obrigatórios</h4>
+      <table>
+        <tr><th>Campo JSON</th><th>Tipo</th><th>Obrig.</th><th>Como é usado na tela</th></tr>
+        <tr><td><code>id</code></td><td><span class="badge number">number</span></td><td><span class="badge required">obrigatório</span></td><td>Chave do componente React (<code>key</code>)</td></tr>
+        <tr><td><code>type</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Título em destaque no card. Ex: "Consulta Clínica", "Exame de Sangue"</td></tr>
+        <tr><td><code>patient</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Nome do paciente — exibido com ícone de usuário e buscável</td></tr>
+        <tr><td><code>doctor</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Nome do médico — exibido com ícone de relógio e buscável</td></tr>
+        <tr><td><code>date</code></td><td><span class="badge string">string</span></td><td><span class="badge required">obrigatório</span></td><td>Data formatada como <code>toLocaleDateString('pt-BR')</code></td></tr>
+      </table>
+
+      <h4>Controller sugerido</h4>
+      <pre><code><span class="k">@RestController</span>
+<span class="k">@RequestMapping</span>(<span class="s">"/api/records"</span>)
+<span class="k">@CrossOrigin</span>(origins = <span class="s">"*"</span>)
+<span class="k">public class</span> <span class="t">RecordController</span> {
+
+    <span class="k">@Autowired</span>
+    <span class="k">private</span> <span class="t">RecordRepository</span> recordRepository;
+
+    <span class="k">@GetMapping</span>
+    <span class="k">public</span> List&lt;<span class="t">MedicalRecord</span>&gt; <span class="f">getAll</span>() {
+        <span class="k">return</span> recordRepository.<span class="f">findAll</span>();
+    }
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 10. CORS ══════════════ -->
+<div class="page" id="cors">
+  <div class="sec-label">Seção 10</div>
+  <h2>CORS</h2>
+  <p class="sec-desc">Configuração necessária para o browser permitir as requisições do frontend para o backend.</p>
+
+  <h3>Configuração atual (desenvolvimento)</h3>
+  <p>Os controllers existentes já têm <code>@CrossOrigin(origins = "*")</code> que permite qualquer origem. Isso funciona para desenvolvimento local.</p>
+
+  <h3>Configuração global recomendada</h3>
+  <p>Em vez de anotar cada controller individualmente, criar uma configuração global:</p>
+
+  <pre><code><span class="k">@Configuration</span>
+<span class="k">public class</span> <span class="t">CorsConfig</span> <span class="k">implements</span> <span class="t">WebMvcConfigurer</span> {
+
+    <span class="k">@Override</span>
+    <span class="k">public void</span> <span class="f">addCorsMappings</span>(<span class="t">CorsRegistry</span> registry) {
+        registry.<span class="f">addMapping</span>(<span class="s">"/api/**"</span>)
+            .<span class="f">allowedOrigins</span>(
+                <span class="s">"http://localhost:5173"</span>,   <span class="c">// Vite dev server (padrão)</span>
+                <span class="s">"http://localhost:4173"</span>    <span class="c">// Vite preview</span>
+            )
+            .<span class="f">allowedMethods</span>(<span class="s">"GET"</span>, <span class="s">"POST"</span>, <span class="s">"PUT"</span>, <span class="s">"DELETE"</span>, <span class="s">"OPTIONS"</span>)
+            .<span class="f">allowedHeaders</span>(<span class="s">"*"</span>)
+            .<span class="f">allowCredentials</span>(<span class="k">false</span>);
+    }
+}</code></pre>
+
+  <div class="callout warn">
+    <strong>Spring Security + CORS:</strong> Se o projeto usa Spring Security, o CORS precisa ser configurado também no <code>SecurityFilterChain</code>, pois o Spring Security intercepta antes do <code>WebMvcConfigurer</code>:
+  </div>
+  <pre><code><span class="k">@Bean</span>
+<span class="k">public</span> <span class="t">SecurityFilterChain</span> <span class="f">filterChain</span>(<span class="t">HttpSecurity</span> http) <span class="k">throws</span> <span class="t">Exception</span> {
+    http
+        .<span class="f">cors</span>(<span class="t">Customizer</span>::<span class="f">withDefaults</span>)  <span class="c">// usa o CorsConfig acima</span>
+        .<span class="f">csrf</span>(csrf -> csrf.<span class="f">disable</span>())
+        .<span class="f">authorizeHttpRequests</span>(auth -> auth
+            .<span class="f">requestMatchers</span>(<span class="s">"/api/auth/**"</span>).<span class="f">permitAll</span>()
+            .<span class="f">anyRequest</span>().<span class="f">authenticated</span>()
+        )
+        .<span class="f">addFilterBefore</span>(jwtFilter, <span class="t">UsernamePasswordAuthenticationFilter</span>.<span class="k">class</span>);
+    <span class="k">return</span> http.<span class="f">build</span>();
+}</code></pre>
+
+  <div class="callout info">
+    <strong>Preflight (OPTIONS):</strong> Navegadores enviam uma requisição <code>OPTIONS</code> antes de <code>POST</code>/<code>PUT</code> com headers customizados. Certifique-se de que o <code>/api/auth/login</code> e demais endpoints respondem corretamente ao <code>OPTIONS</code> (status 200 ou 204).
+  </div>
+</div>
+
+<!-- ══════════════ 11. ERRORS ══════════════ -->
+<div class="page" id="errors">
+  <div class="sec-label">Seção 11</div>
+  <h2>Tratamento de Erros</h2>
+  <p class="sec-desc">Como o frontend reage a cada tipo de resposta de erro.</p>
+
+  <table>
+    <tr><th>HTTP Status</th><th>Situação</th><th>Comportamento no frontend</th></tr>
+    <tr><td><code>400</code></td><td>Dados inválidos</td><td>Exibe o texto do body no console. Em Login, exibe "Email ou senha inválidos."</td></tr>
+    <tr><td><code>401</code></td><td>Não autenticado / token inválido</td><td>Lança erro (não trata automaticamente ainda — recomendado implementar redirecionamento)</td></tr>
+    <tr><td><code>403</code></td><td>Sem permissão</td><td>Lança erro com o texto do body</td></tr>
+    <tr><td><code>404</code></td><td>Recurso não encontrado</td><td>Lança erro com "HTTP 404"</td></tr>
+    <tr><td><code>500</code></td><td>Erro interno do servidor</td><td>Lança erro — capturado pelo <code>ErrorBoundary</code> e exibe tela de erro</td></tr>
+  </table>
+
+  <h3>Formato de erro recomendado</h3>
+  <p>O frontend aceita qualquer texto no body de erro. Para facilitar depuração, recomendamos o padrão Spring:</p>
+  <pre><code>{
+  <span class="p">"timestamp"</span>: <span class="s">"2026-04-26T14:30:00Z"</span>,
+  <span class="p">"status"</span>: <span class="n">400</span>,
+  <span class="p">"error"</span>: <span class="s">"Bad Request"</span>,
+  <span class="p">"message"</span>: <span class="s">"Campo 'nome' é obrigatório"</span>,
+  <span class="p">"path"</span>: <span class="s">"/api/patients"</span>
+}</code></pre>
+
+  <div class="callout info">
+    <strong>Global Exception Handler:</strong> Recomendamos criar um <code>@ControllerAdvice</code> para padronizar as respostas de erro em todos os controllers.
+  </div>
+</div>
+
+<!-- ══════════════ 12. CHECKLIST ══════════════ -->
+<div class="page" id="checklist">
+  <div class="sec-label">Seção 12</div>
+  <h2>Checklist de Integração</h2>
+  <p class="sec-desc">Tudo que precisa estar funcionando para o frontend operar completamente.</p>
+
+  <h3>Controllers existentes — verificar</h3>
+  <table>
+    <tr><th></th><th>Item</th><th>Detalhe</th></tr>
+    <tr><td>☐</td><td><code>POST /api/auth/login</code> responde com <code>{ "token": "..." }</code></td><td>Campo obrigatório: <code>token</code></td></tr>
+    <tr><td>☐</td><td>Payload do JWT contém campo <code>sub</code> com email</td><td>Usado para exibir nome do usuário no Header</td></tr>
+    <tr><td>☐</td><td><code>GET /api/patients</code> retorna array com campos: <code>id, nome, dataNascimento, sexo, telefone, email</code></td><td><code>dataNascimento</code> em formato <code>"YYYY-MM-DD"</code></td></tr>
+    <tr><td>☐</td><td><code>POST /api/patients</code> aceita body sem <code>createdBy</code></td><td>O campo foi removido do frontend</td></tr>
+    <tr><td>☐</td><td><code>GET /api/triage</code> retorna array com campos: <code>id, patientId, patientName, nivelRisco, status, data</code></td><td><code>data</code> em ISO 8601 com hora</td></tr>
+    <tr><td>☐</td><td><code>POST /api/triage</code> aceita o objeto <code>vitals</code> aninhado</td><td>Pode ser <code>@Embedded</code> ou JSON como String</td></tr>
+    <tr><td>☐</td><td>CORS configurado para <code>http://localhost:5173</code></td><td>Porta padrão do Vite dev server</td></tr>
+  </table>
+
+  <h3>Controllers a criar — obrigatório</h3>
+  <table>
+    <tr><th></th><th>Item</th><th>Prioridade</th></tr>
+    <tr><td>☐</td><td>Criar <code>BedController</code> com <code>GET /api/beds</code></td><td>Alta — tela de Monitoramento</td></tr>
+    <tr><td>☐</td><td>Criar <code>BedController</code> com <code>PUT /api/beds/{id}</code></td><td>Alta — permite alterar status do leito</td></tr>
+    <tr><td>☐</td><td>Criar <code>RecordController</code> com <code>GET /api/records</code></td><td>Média — tela de Prontuários</td></tr>
+    <tr><td>☐</td><td>Populadar banco com leitos de exemplo</td><td>Alta — sem dados, a tela fica em branco</td></tr>
+  </table>
+
+  <h3>Opcional mas recomendado</h3>
+  <table>
+    <tr><th></th><th>Item</th></tr>
+    <tr><td>☐</td><td>Retornar HTTP 401 com mensagem clara quando token expirar</td></tr>
+    <tr><td>☐</td><td>Adicionar <code>spring.jackson.serialization.write-dates-as-timestamps=false</code> em <code>application.properties</code></td></tr>
+    <tr><td>☐</td><td>Criar <code>@ControllerAdvice</code> global para tratamento de exceções</td></tr>
+    <tr><td>☐</td><td>Configurar CORS global ao invés de <code>@CrossOrigin</code> em cada controller</td></tr>
+  </table>
+
+  <hr />
+
+  <div class="callout success">
+    <strong>Frontend pronto para produção.</strong> Todos os 11 arquivos foram migrados de Firebase para REST. Assim que os endpoints <code>/api/beds</code> e <code>/api/records</code> forem implementados no Spring, todas as telas estarão funcionais. A URL base do backend é configurável via <code>VITE_API_URL</code> no arquivo <code>.env</code> do projeto frontend.
+  </div>
+
+  <h3>Contato e referências</h3>
+  <table>
+    <tr><th>Arquivo</th><th>Descrição</th></tr>
+    <tr><td><code>src/services/api.ts</code></td><td>Todos os endpoints e tipos de request/response</td></tr>
+    <tr><td><code>src/types/hospital.ts</code></td><td>Tipos TypeScript que espelham os modelos Spring</td></tr>
+    <tr><td><code>src/pages/*.tsx</code></td><td>Cada tela com sua lógica de chamada à API</td></tr>
+    <tr><td><code>CHANGES.html</code></td><td>Documentação completa das mudanças no frontend</td></tr>
+  </table>
+</div>
+
+<!-- botão de impressão -->
+<div style="position:fixed; bottom:24px; right:24px; z-index:999; display:flex; gap:10px;">
+  <button onclick="window.print()" style="background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.4);">
+    Salvar como PDF
+  </button>
+</div>
+
+<style>
+  @media print {
+    button { display: none !important; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</body>
+</html>

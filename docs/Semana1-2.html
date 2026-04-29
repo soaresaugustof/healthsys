@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthSys — Semanas 1 e 2</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; color: #1e293b; }
+
+    header {
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      color: white;
+      padding: 48px 64px;
+    }
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    header h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+    header p  { font-size: 16px; opacity: 0.85; }
+    header .meta { margin-top: 20px; font-size: 13px; opacity: 0.7; display: flex; gap: 32px; }
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 48px 32px; }
+
+    /* TOC */
+    .toc {
+      background: white;
+      border-left: 4px solid #2563eb;
+      border-radius: 8px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .toc h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 14px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin: 6px 0; }
+    .toc a { color: #2563eb; text-decoration: none; font-size: 15px; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* Sections */
+    section { margin-bottom: 48px; }
+    section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    section h2 .num {
+      background: #2563eb;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #334155;
+      margin: 20px 0 10px;
+    }
+
+    p { line-height: 1.7; color: #475569; margin-bottom: 12px; }
+
+    .subtitle{
+      color: #d9e7fa;
+    }
+    /* Req cards */
+    .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .req-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px 22px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      border-top: 3px solid #2563eb;
+    }
+    .req-card.nf { border-top-color: #7c3aed; }
+    .req-card h4 { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+    .req-card ul { padding-left: 18px; }
+    .req-card ul li { font-size: 14px; color: #475569; line-height: 1.7; }
+
+    /* Architecture */
+    .arch-box {
+      background: white;
+      border-radius: 10px;
+      padding: 28px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      margin-bottom: 20px;
+    }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+    .svc-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .svc-card .icon { font-size: 28px; margin-bottom: 8px; }
+    .svc-card .name { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .svc-card .port { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+    .svc-card .desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+    .svc-card.gateway { border-color: #2563eb; background: #eff6ff; }
+    .svc-card.infra  { border-color: #7c3aed; background: #f5f3ff; }
+
+    .flow-diagram {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 24px 28px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+    .flow-diagram .comment { color: #64748b; }
+    .flow-diagram .highlight { color: #60a5fa; }
+    .flow-diagram .arrow { color: #34d399; }
+
+    /* DB Tables */
+    .db-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .db-table {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      overflow: hidden;
+    }
+    .db-table .db-header {
+      background: #1e293b;
+      color: white;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .db-table .db-header span { font-size: 11px; color: #94a3b8; font-weight: 400; }
+    .db-table table { width: 100%; border-collapse: collapse; }
+    .db-table table th {
+      background: #f1f5f9;
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 8px 14px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .db-table table td {
+      padding: 8px 14px;
+      font-size: 13px;
+      color: #334155;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .db-table table tr:last-child td { border-bottom: none; }
+    .pk  { color: #d97706; font-weight: 700; font-size: 10px; background: #fef3c7; border-radius: 3px; padding: 1px 5px; }
+    .fk  { color: #2563eb; font-weight: 700; font-size: 10px; background: #eff6ff; border-radius: 3px; padding: 1px 5px; }
+    .type-badge { font-size: 11px; color: #7c3aed; font-family: monospace; }
+
+    /* Stack table */
+    .stack-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .stack-table th { background: #1e293b; color: white; padding: 12px 16px; text-align: left; font-size: 13px; }
+    .stack-table td { padding: 11px 16px; font-size: 13px; color: #334155; border-bottom: 1px solid #f1f5f9; }
+    .stack-table tr:last-child td { border-bottom: none; }
+    .stack-table tr:nth-child(even) td { background: #f8fafc; }
+    .tag { display: inline-block; background: #eff6ff; color: #2563eb; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+
+    /* Rel diagram */
+    .rel-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 24px;
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 2;
+    }
+    .rel-box .entity { color: #60a5fa; font-weight: bold; }
+    .rel-box .rel    { color: #34d399; }
+    .rel-box .card   { color: #fbbf24; }
+
+    footer {
+      text-align: center;
+      padding: 32px;
+      color: #94a3b8;
+      font-size: 13px;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Projeto Final — Gestão Hospitalar Distribuída</div>
+  <h1>HealthSys</h1>
+  <p class="subtitle">Plataforma de Gestão Hospitalar baseada em Microsserviços</p>
+  <div class="meta">
+    <span>📋 Requisitos, Arquitetura e Modelagem de Dados</span>
+    <span>👤 Augusto Soares</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>Sumário</h2>
+    <ol>
+      <li><a href="#requisitos">Definição dos Requisitos do Sistema</a></li>
+      <li><a href="#arquitetura">Modelagem da Arquitetura Distribuída</a></li>
+      <li><a href="#banco">Modelagem Inicial do Banco de Dados</a></li>
+      <li><a href="#stack">Stack Tecnológica</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. REQUISITOS -->
+  <section id="requisitos">
+    <h2><span class="num">1</span> Definição dos Requisitos do Sistema</h2>
+
+    <p>
+      O <strong>HealthSys</strong> é uma plataforma de gestão hospitalar distribuída que automatiza
+      os principais fluxos de um ambiente hospitalar: cadastro de pacientes, triagem, prontuários
+      eletrônicos, gestão de leitos e controle de usuários. O sistema é construído sobre uma
+      arquitetura de microsserviços, garantindo escalabilidade e independência entre os domínios.
+    </p>
+
+    <h3>1.1 Requisitos Funcionais</h3>
+    <div class="req-grid">
+
+      <div class="req-card">
+        <h4>👤 Gestão de Usuários</h4>
+        <ul>
+          <li>Cadastro de usuários com perfis: Admin, Médico e Enfermeiro</li>
+          <li>Autenticação via login com e-mail e senha</li>
+          <li>Geração de token JWT após autenticação bem-sucedida</li>
+          <li>Listagem, criação e remoção de usuários</li>
+          <li>Carga inicial automática de usuários padrão (DataSeeder)</li>
+        </ul>
+      </div>
+
+      <div class="req-card">
+        <h4>🏥 Gestão de Pacientes</h4>
+        <ul>
+          <li>Cadastro de pacientes com dados pessoais completos</li>
+          <li>Armazenamento de nome, data de nascimento, sexo, telefone e e-mail</li>
+          <li>Listagem e busca de pacientes cadastrados</li>
+          <li>Atualização e remoção de registros de pacientes</li>
+        </ul>
+      </div>
+
+      <div class="req-card">
+        <h4>🩺 Triagem</h4>
+        <ul>
+          <li>Registro de triagem vinculada a um paciente</li>
+          <li>Classificação de risco (ex.: verde, amarelo, vermelho)</li>
+          <li>Coleta de sinais vitais: temperatura, frequência cardíaca, saturação e pressão arterial</li>
+          <li>Controle de status da triagem (aguardando, em atendimento, concluída)</li>
+          <li>Publicação de eventos de triagem no Kafka para integração assíncrona</li>
+        </ul>
+      </div>
+
+      <div class="req-card">
+        <h4>📋 Prontuário Eletrônico</h4>
+        <ul>
+          <li>Criação de registros de prontuário por paciente</li>
+          <li>Associação de tipo de atendimento, médico responsável e data</li>
+          <li>Listagem de prontuários para consulta clínica</li>
+          <li>Acesso restrito por autenticação JWT</li>
+        </ul>
+      </div>
+
+      <div class="req-card">
+        <h4>🛏️ Gestão de Leitos</h4>
+        <ul>
+          <li>Cadastro de leitos com identificador, setor e status</li>
+          <li>Atualização de status: disponível, ocupado, em manutenção</li>
+          <li>Vinculação de leito a um paciente internado</li>
+          <li>Listagem em tempo real dos leitos e suas ocupações</li>
+        </ul>
+      </div>
+
+      <div class="req-card">
+        <h4>🔐 Segurança e Acesso</h4>
+        <ul>
+          <li>Todas as rotas protegidas requerem token JWT válido</li>
+          <li>Rota de login pública (<code>/api/auth/login</code>)</li>
+          <li>Validação centralizada do JWT no API Gateway</li>
+          <li>Propagação do e-mail autenticado via header <code>X-User-Email</code></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <h3>1.2 Requisitos Não Funcionais</h3>
+    <div class="req-grid">
+
+      <div class="req-card nf">
+        <h4>⚡ Desempenho e Escalabilidade</h4>
+        <ul>
+          <li>Cada microsserviço é escalável de forma independente</li>
+          <li>Comunicação assíncrona via Apache Kafka para operações de alto volume</li>
+          <li>Sessões stateless (JWT) — sem dependência de estado no servidor</li>
+          <li>Pool de conexões com banco de dados gerenciado pelo HikariCP</li>
+        </ul>
+      </div>
+
+      <div class="req-card nf">
+        <h4>🛡️ Segurança</h4>
+        <ul>
+          <li>Autenticação baseada em JWT com expiração de 10 horas</li>
+          <li>Senhas armazenadas com BCrypt (fator de custo padrão)</li>
+          <li>CSRF desabilitado para APIs REST stateless</li>
+          <li>CORS configurado apenas para origens autorizadas</li>
+        </ul>
+      </div>
+
+      <div class="req-card nf">
+        <h4>🔧 Manutenibilidade</h4>
+        <ul>
+          <li>Arquitetura de microsserviços: cada serviço com repositório e deploy independente</li>
+          <li>Containerização com Docker e orquestração via Docker Compose</li>
+          <li>Separação clara por domínio (DDD aplicado por serviço)</li>
+          <li>Configuração externalizada via variáveis de ambiente</li>
+        </ul>
+      </div>
+
+      <div class="req-card nf">
+        <h4>📡 Disponibilidade e Integração</h4>
+        <ul>
+          <li>API Gateway único como ponto de entrada para o frontend</li>
+          <li>Health checks no PostgreSQL e Kafka via Docker Compose</li>
+          <li>Serviços dependentes aguardam infraestrutura estar pronta (<code>depends_on</code>)</li>
+          <li>Banco de dados centralizado PostgreSQL 16 com schemas independentes por domínio</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 2. ARQUITETURA -->
+  <section id="arquitetura">
+    <h2><span class="num">2</span> Modelagem da Arquitetura Distribuída</h2>
+
+    <p>
+      O HealthSys adota o padrão de <strong>microsserviços</strong> com um <strong>API Gateway</strong>
+      central que recebe todas as requisições do frontend, valida o token JWT e as roteia para o
+      serviço responsável. A comunicação entre serviços ocorre de forma assíncrona via
+      <strong>Apache Kafka</strong> quando necessário (ex.: criação de triagem).
+    </p>
+
+    <div class="arch-box">
+      <h3 style="margin-bottom:4px;">Visão Geral dos Serviços</h3>
+      <p style="font-size:13px;">6 microsserviços + 2 serviços de infraestrutura</p>
+      <div class="services-grid">
+        <div class="svc-card gateway">
+          <div class="icon">🚪</div>
+          <div class="name">API Gateway</div>
+          <div class="port">:8080</div>
+          <div class="desc">Ponto de entrada único. Valida JWT e roteia para os microsserviços via WebFlux proxy.</div>
+        </div>
+        <div class="svc-card">
+          <div class="icon">👤</div>
+          <div class="name">User Service</div>
+          <div class="port">:8081</div>
+          <div class="desc">Autenticação, gerenciamento de usuários e geração de tokens JWT.</div>
+        </div>
+        <div class="svc-card">
+          <div class="icon">🏥</div>
+          <div class="name">Patient Service</div>
+          <div class="port">:8082</div>
+          <div class="desc">CRUD completo de pacientes. Tabela <code>pacientes</code>.</div>
+        </div>
+        <div class="svc-card">
+          <div class="icon">🩺</div>
+          <div class="name">Triage Service</div>
+          <div class="port">:8083</div>
+          <div class="desc">Registro de triagens com sinais vitais. Publica eventos no Kafka.</div>
+        </div>
+        <div class="svc-card">
+          <div class="icon">📋</div>
+          <div class="name">Record Service</div>
+          <div class="port">:8084</div>
+          <div class="desc">Prontuários eletrônicos. Tabela <code>prontuarios</code>.</div>
+        </div>
+        <div class="svc-card">
+          <div class="icon">🛏️</div>
+          <div class="name">Bed Service</div>
+          <div class="port">:8085</div>
+          <div class="desc">Gestão de leitos hospitalares. Tabela <code>leitos</code>.</div>
+        </div>
+        <div class="svc-card infra">
+          <div class="icon">🐘</div>
+          <div class="name">PostgreSQL 16</div>
+          <div class="port">:5432</div>
+          <div class="desc">Banco de dados relacional centralizado. Schemas independentes por serviço.</div>
+        </div>
+        <div class="svc-card infra">
+          <div class="icon">📨</div>
+          <div class="name">Apache Kafka</div>
+          <div class="port">:9092</div>
+          <div class="desc">Message broker para eventos assíncronos. Tópico: <code>triage-events</code>.</div>
+        </div>
+        <div class="svc-card infra">
+          <div class="icon">⚙️</div>
+          <div class="name">Zookeeper</div>
+          <div class="port">:2181</div>
+          <div class="desc">Coordenação de cluster do Kafka.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-box">
+      <h3>Fluxo de uma Requisição Autenticada</h3>
+      <div class="flow-diagram">
+<span class="comment">┌─────────────────────────────────────────────────────────────────────┐</span>
+<span class="comment">│  FLUXO: Frontend → API Gateway → Microsserviço                      │</span>
+<span class="comment">└─────────────────────────────────────────────────────────────────────┘</span>
+
+<span class="comment">1. Login (rota pública)</span>
+   <span class="highlight">Frontend</span>  <span class="arrow">──POST /api/auth/login──▶</span>  <span class="highlight">API Gateway :8080</span>
+             <span class="arrow">────────────────────▶</span>  <span class="highlight">User Service :8081</span>
+             <span class="arrow">◀─── { token: JWT } ────</span>  BCrypt valida senha → gera JWT
+
+<span class="comment">2. Requisição protegida</span>
+   <span class="highlight">Frontend</span>  <span class="arrow">──GET /api/patients (Authorization: Bearer JWT)──▶</span>  <span class="highlight">API Gateway</span>
+             JwtAuthFilter valida JWT  <span class="arrow">──▶</span>  injeta header <span class="highlight">X-User-Email</span>
+             ProxyFilter               <span class="arrow">──▶</span>  <span class="highlight">Patient Service :8082</span>
+             <span class="arrow">◀───────── [ lista de pacientes ] ─────────────────</span>
+
+<span class="comment">3. Evento assíncrono (Triagem)</span>
+   <span class="highlight">Triage Service</span>  <span class="arrow">──salva no banco──▶</span>  <span class="highlight">PostgreSQL</span>
+                   <span class="arrow">──publica evento──▶</span>  <span class="highlight">Kafka (triage-events)</span>
+      </div>
+    </div>
+
+    <div class="arch-box">
+      <h3>Tabela de Roteamento do API Gateway</h3>
+      <table class="stack-table" style="margin-top:12px;">
+        <thead>
+          <tr>
+            <th>Prefixo de Rota</th>
+            <th>Serviço Destino</th>
+            <th>Porta</th>
+            <th>Autenticação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/api/auth/**</code></td><td>User Service</td><td>8081</td><td><span class="tag">Pública</span></td></tr>
+          <tr><td><code>/api/users/**</code></td><td>User Service</td><td>8081</td><td><span class="tag" style="background:#fef3c7;color:#92400e;">JWT</span></td></tr>
+          <tr><td><code>/api/patients/**</code></td><td>Patient Service</td><td>8082</td><td><span class="tag" style="background:#fef3c7;color:#92400e;">JWT</span></td></tr>
+          <tr><td><code>/api/triage/**</code></td><td>Triage Service</td><td>8083</td><td><span class="tag" style="background:#fef3c7;color:#92400e;">JWT</span></td></tr>
+          <tr><td><code>/api/records/**</code></td><td>Record Service</td><td>8084</td><td><span class="tag" style="background:#fef3c7;color:#92400e;">JWT</span></td></tr>
+          <tr><td><code>/api/beds/**</code></td><td>Bed Service</td><td>8085</td><td><span class="tag" style="background:#fef3c7;color:#92400e;">JWT</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. BANCO DE DADOS -->
+  <section id="banco">
+    <h2><span class="num">3</span> Modelagem Inicial do Banco de Dados</h2>
+
+    <p>
+      O banco de dados utilizado é o <strong>PostgreSQL 16</strong>. Todas as tabelas residem no
+      mesmo schema (<code>healthsys/public</code>), porém cada microsserviço acessa exclusivamente
+      as tabelas do seu domínio, garantindo isolamento lógico. O Hibernate gerencia a criação e
+      atualização das tabelas via <code>ddl-auto: update</code>.
+    </p>
+
+    <div class="db-grid">
+
+      <!-- usuarios -->
+      <div class="db-table">
+        <div class="db-header">
+          usuarios
+          <span>user-service</span>
+        </div>
+        <table>
+          <thead><tr><th>Coluna</th><th>Tipo</th><th>Restrição</th></tr></thead>
+          <tbody>
+            <tr><td>id</td><td><span class="type-badge">BIGINT</span></td><td><span class="pk">PK</span> AUTO</td></tr>
+            <tr><td>nome</td><td><span class="type-badge">VARCHAR</span></td><td>NOT NULL</td></tr>
+            <tr><td>email</td><td><span class="type-badge">VARCHAR</span></td><td>UNIQUE</td></tr>
+            <tr><td>senha</td><td><span class="type-badge">VARCHAR</span></td><td>BCrypt hash</td></tr>
+            <tr><td>perfil</td><td><span class="type-badge">VARCHAR</span></td><td>Admin / Medico / Enfermeiro</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- pacientes -->
+      <div class="db-table">
+        <div class="db-header">
+          pacientes
+          <span>patient-service</span>
+        </div>
+        <table>
+          <thead><tr><th>Coluna</th><th>Tipo</th><th>Restrição</th></tr></thead>
+          <tbody>
+            <tr><td>id</td><td><span class="type-badge">BIGINT</span></td><td><span class="pk">PK</span> AUTO</td></tr>
+            <tr><td>nome</td><td><span class="type-badge">VARCHAR</span></td><td>NOT NULL</td></tr>
+            <tr><td>data_nascimento</td><td><span class="type-badge">DATE</span></td><td></td></tr>
+            <tr><td>sexo</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+            <tr><td>telefone</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+            <tr><td>email</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- triagens -->
+      <div class="db-table">
+        <div class="db-header">
+          triagens
+          <span>triage-service</span>
+        </div>
+        <table>
+          <thead><tr><th>Coluna</th><th>Tipo</th><th>Restrição</th></tr></thead>
+          <tbody>
+            <tr><td>id</td><td><span class="type-badge">BIGINT</span></td><td><span class="pk">PK</span> AUTO</td></tr>
+            <tr><td>patient_id</td><td><span class="type-badge">VARCHAR</span></td><td><span class="fk">FK</span> lógico</td></tr>
+            <tr><td>patient_name</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+            <tr><td>nivel_risco</td><td><span class="type-badge">VARCHAR</span></td><td>verde/amarelo/vermelho</td></tr>
+            <tr><td>status</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+            <tr><td>data</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+            <tr><td>temp</td><td><span class="type-badge">VARCHAR</span></td><td>Sinais vitais (embutido)</td></tr>
+            <tr><td>heart_rate</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+            <tr><td>saturation</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+            <tr><td>pressure</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- prontuarios -->
+      <div class="db-table">
+        <div class="db-header">
+          prontuarios
+          <span>record-service</span>
+        </div>
+        <table>
+          <thead><tr><th>Coluna</th><th>Tipo</th><th>Restrição</th></tr></thead>
+          <tbody>
+            <tr><td>id</td><td><span class="type-badge">BIGINT</span></td><td><span class="pk">PK</span> AUTO</td></tr>
+            <tr><td>type</td><td><span class="type-badge">VARCHAR</span></td><td>tipo de atendimento</td></tr>
+            <tr><td>patient</td><td><span class="type-badge">VARCHAR</span></td><td><span class="fk">FK</span> lógico</td></tr>
+            <tr><td>doctor</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+            <tr><td>date</td><td><span class="type-badge">VARCHAR</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- leitos -->
+      <div class="db-table">
+        <div class="db-header">
+          leitos
+          <span>bed-service</span>
+        </div>
+        <table>
+          <thead><tr><th>Coluna</th><th>Tipo</th><th>Restrição</th></tr></thead>
+          <tbody>
+            <tr><td>id</td><td><span class="type-badge">VARCHAR</span></td><td><span class="pk">PK</span> manual</td></tr>
+            <tr><td>setor</td><td><span class="type-badge">VARCHAR</span></td><td>UTI, Enfermaria…</td></tr>
+            <tr><td>status</td><td><span class="type-badge">VARCHAR</span></td><td>disponivel/ocupado/manutencao</td></tr>
+            <tr><td>paciente_id</td><td><span class="type-badge">VARCHAR</span></td><td><span class="fk">FK</span> lógico</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="arch-box" style="margin-top:20px;">
+      <h3>Relacionamentos entre Entidades</h3>
+      <div class="rel-box">
+<span class="entity">Patient</span>  <span class="rel">──(1:N)──</span>  <span class="entity">Triage</span>
+   <span class="card">(um paciente pode ter múltiplas triagens)</span>
+   <span class="card">referência via patient_id (chave lógica, sem FK física entre serviços)</span>
+
+<span class="entity">Patient</span>  <span class="rel">──(1:N)──</span>  <span class="entity">MedicalRecord</span>
+   <span class="card">(um paciente pode ter múltiplos prontuários)</span>
+
+<span class="entity">Patient</span>  <span class="rel">──(1:1)──</span>  <span class="entity">Bed</span>
+   <span class="card">(um paciente pode estar internado em um leito)</span>
+
+<span class="entity">Triage</span>   <span class="rel">──(1:1)──</span>  <span class="entity">Vitals</span>
+   <span class="card">(sinais vitais embutidos na triagem — @Embeddable)</span>
+      </div>
+      <p style="margin-top:12px; font-size:13px; color:#64748b;">
+        ⚠️ Em arquitetura de microsserviços, não existem foreign keys físicas entre serviços distintos.
+        As relações são mantidas via <strong>chaves lógicas</strong> (IDs referenciados como VARCHAR/BIGINT)
+        e a consistência é garantida pela camada de aplicação ou por eventos no Kafka.
+      </p>
+    </div>
+  </section>
+
+  <!-- 4. STACK -->
+  <section id="stack">
+    <h2><span class="num">4</span> Stack Tecnológica</h2>
+    <table class="stack-table">
+      <thead>
+        <tr>
+          <th>Camada</th>
+          <th>Tecnologia</th>
+          <th>Versão</th>
+          <th>Justificativa</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Framework</td><td>Spring Boot</td><td>4.0.5</td><td>Ecossistema maduro para microsserviços Java; auto-configuração e starters</td></tr>
+        <tr><td>Linguagem</td><td>Java</td><td>17 (LTS)</td><td>Versão LTS com suporte a records, text blocks e melhorias de performance</td></tr>
+        <tr><td>API Gateway</td><td>Spring WebFlux (Netty)</td><td>—</td><td>Proxy reativo com baixo overhead; substitui Spring Cloud Gateway</td></tr>
+        <tr><td>Segurança</td><td>Spring Security + JWT (JJWT 0.11.5)</td><td>7.x</td><td>Autenticação stateless, ideal para APIs REST distribuídas</td></tr>
+        <tr><td>Persistência</td><td>Spring Data JPA + Hibernate</td><td>7.2</td><td>ORM padrão; abstração de consultas com repositórios</td></tr>
+        <tr><td>Banco de Dados</td><td>PostgreSQL</td><td>16</td><td>Banco relacional robusto com suporte a SCRAM-SHA-256</td></tr>
+        <tr><td>Mensageria</td><td>Apache Kafka</td><td>7.6.0</td><td>Alta throughput para eventos assíncronos entre serviços</td></tr>
+        <tr><td>Build</td><td>Gradle</td><td>9.4.1</td><td>Build rápido com cache incremental; suporte a multi-módulo</td></tr>
+        <tr><td>Containerização</td><td>Docker + Docker Compose</td><td>—</td><td>Ambiente reproduzível; facilita deploy e desenvolvimento local</td></tr>
+        <tr><td>Frontend</td><td>React + TypeScript + Vite</td><td>—</td><td>SPA moderna com tipagem estática e build rápido</td></tr>
+        <tr><td>Utilitários</td><td>Lombok</td><td>—</td><td>Reduz boilerplate em entidades e DTOs</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+<footer>
+  HealthSys — Projeto Final de Gestão Hospitalar Distribuída &nbsp;|&nbsp; Semanas 1–2 &nbsp;|&nbsp; Augusto Soares
+</footer>
+
+</body>
+</html>

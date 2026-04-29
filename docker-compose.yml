@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+
+  # ── INFRAESTRUTURA ──────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: healthsys
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d healthsys"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ── MICROSERVIÇOS ────────────────────────────────────────────
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: user-service
+        SERVICE_PORT: 8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/healthsys
+      DB_USERNAME: myuser
+      DB_PASSWORD: secret
+      JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
+
+  patient-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: patient-service
+        SERVICE_PORT: 8082
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/healthsys
+      DB_USERNAME: myuser
+      DB_PASSWORD: secret
+
+  triage-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: triage-service
+        SERVICE_PORT: 8083
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/healthsys
+      DB_USERNAME: myuser
+      DB_PASSWORD: secret
+      KAFKA_SERVERS: kafka:9092
+
+  record-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: record-service
+        SERVICE_PORT: 8084
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/healthsys
+      DB_USERNAME: myuser
+      DB_PASSWORD: secret
+
+  bed-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: bed-service
+        SERVICE_PORT: 8085
+    ports:
+      - "8085:8085"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/healthsys
+      DB_USERNAME: myuser
+      DB_PASSWORD: secret
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: api-gateway
+        SERVICE_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - patient-service
+      - triage-service
+      - record-service
+      - bed-service
+    environment:
+      JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
+      USER_SERVICE_URL: http://user-service:8081
+      PATIENT_SERVICE_URL: http://patient-service:8082
+      TRIAGE_SERVICE_URL: http://triage-service:8083
+      RECORD_SERVICE_URL: http://record-service:8084
+      BED_SERVICE_URL: http://bed-service:8085
+
+volumes:
+  postgres_data:

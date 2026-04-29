@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :user-service:bootJar :patient-service:bootJar :triage-service:bootJar :record-service:bootJar :bed-service:bootJar :api-gateway:bootJar -x test --no-daemon)"
+    ]
+  }
+}

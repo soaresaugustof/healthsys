@@ -1,0 +1,8 @@
+rootProject.name = 'healthsys'
+
+include 'api-gateway'
+include 'user-service'
+include 'patient-service'
+include 'triage-service'
+include 'record-service'
+include 'bed-service'
