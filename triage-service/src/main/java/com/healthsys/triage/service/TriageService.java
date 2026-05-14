@@ -27,6 +27,7 @@ public class TriageService {
 
     public Triage create(Triage triage) {
         triage.setStatus(TriageStatus.PENDENTE);
+        triage.setData(LocalDateTime.now());
         Triage saved = triageRepository.save(triage);
         eventProducer.sendTriageCreated(saved);
         return saved;
@@ -41,11 +42,13 @@ public class TriageService {
         return saved;
     }
 
-    public Triage callPatient(Long id) {
+    public Triage assignDoctor(Long id, String medicoId, String medicoNome) {
         Triage triage = triageRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Triagem não encontrada"));
         triage.setStatus(TriageStatus.EM_ATENDIMENTO);
         triage.setChamadoEm(LocalDateTime.now());
+        triage.setMedicoId(medicoId);
+        triage.setMedicoNome(medicoNome);
         Triage saved = triageRepository.save(triage);
         eventProducer.sendPatientCalled(saved);
         return saved;

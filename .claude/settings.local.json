@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./gradlew :user-service:bootJar :patient-service:bootJar :triage-service:bootJar :record-service:bootJar :bed-service:bootJar :api-gateway:bootJar -x test --no-daemon)"
+      "Bash(./gradlew :user-service:bootJar :patient-service:bootJar :triage-service:bootJar :record-service:bootJar :bed-service:bootJar :api-gateway:bootJar -x test --no-daemon)",
+      "Bash(findstr /i \"mask imask cleave\" \"c:\\\\Users\\\\arqui\\\\Downloads\\\\healthsys-front\\\\package.json\")",
+      "Bash(findstr \"mask imask cleave\" \"c:\\\\Users\\\\arqui\\\\Downloads\\\\healthsys-front\\\\package.json\")",
+      "Bash(mkdir -p \"c:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\notification-service\\\\src\\\\main\\\\java\\\\com\\\\healthsys\\\\notification\\\\model\")",
+      "Bash(mkdir -p \"c:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\notification-service\\\\src\\\\main\\\\java\\\\com\\\\healthsys\\\\notification\\\\repository\")",
+      "Bash(mkdir -p \"c:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\notification-service\\\\src\\\\main\\\\java\\\\com\\\\healthsys\\\\notification\\\\service\")",
+      "Bash(mkdir -p \"c:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\notification-service\\\\src\\\\main\\\\java\\\\com\\\\healthsys\\\\notification\\\\controller\")",
+      "Bash(mkdir -p \"c:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\notification-service\\\\src\\\\main\\\\java\\\\com\\\\healthsys\\\\notification\\\\messaging\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Bash(grep -E \"\\\\.\\(gradle|xml\\)$\")",
+      "Bash(Remove-Item -Recurse -Force \"C:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\src\")",
+      "Bash(Remove-Item -Force \"C:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\record-service\\\\src\\\\main\\\\java\\\\com\\\\healthsys\\\\record\\\\model\\\\MedicalRecord.java\")",
+      "Bash(Remove-Item -Force \"C:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\record-service\\\\src\\\\main\\\\java\\\\com\\\\healthsys\\\\record\\\\model\\\\RecordType.java\")",
+      "Bash(Remove-Item -Force \"C:\\\\Users\\\\arqui\\\\IdeaProjects\\\\healthsys\\\\record-service\\\\src\\\\main\\\\java\\\\com\\\\healthsys\\\\record\\\\repository\\\\MedicalRecordRepository.java\")",
+      "Bash(Write-Output \"Deletados.\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\arqui\\\\Downloads\\\\healthsys-front\\\\src\\\\pages\\\\\" -File | Select-Object -ExpandProperty Name)"
     ]
   }
 }

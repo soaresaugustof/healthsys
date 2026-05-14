@@ -2,7 +2,6 @@ package com.healthsys.triage.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,6 +14,10 @@ public class Triage {
 
     private String patientId;
     private String patientName;
+    private String queixaPrincipal;
+
+    private String medicoId;
+    private String medicoNome;
 
     @Enumerated(EnumType.STRING)
     private NivelRisco nivelRisco;
@@ -22,7 +25,7 @@ public class Triage {
     @Enumerated(EnumType.STRING)
     private TriageStatus status;
 
-    private LocalDate data;
+    private LocalDateTime data;
     private LocalDateTime chamadoEm;
 
     @Embedded

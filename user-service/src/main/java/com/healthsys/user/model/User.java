@@ -14,6 +14,7 @@ public class User {
     private String nome;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "perfil", columnDefinition = "varchar(50)")
     private Perfil perfil;
 
     private String email;

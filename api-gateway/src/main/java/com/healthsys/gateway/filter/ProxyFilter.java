@@ -31,7 +31,8 @@ public class ProxyFilter implements WebFilter {
             @Value("${PATIENT_SERVICE_URL:http://localhost:8082}") String patientUrl,
             @Value("${TRIAGE_SERVICE_URL:http://localhost:8083}") String triageUrl,
             @Value("${RECORD_SERVICE_URL:http://localhost:8084}") String recordUrl,
-            @Value("${BED_SERVICE_URL:http://localhost:8085}") String bedUrl) {
+            @Value("${BED_SERVICE_URL:http://localhost:8085}") String bedUrl,
+            @Value("${NOTIFICATION_SERVICE_URL:http://localhost:8086}") String notificationUrl) {
         this.webClient = builder.build();
         routes.put("/api/auth", userUrl);
         routes.put("/api/users", userUrl);
@@ -39,6 +40,7 @@ public class ProxyFilter implements WebFilter {
         routes.put("/api/triage", triageUrl);
         routes.put("/api/records", recordUrl);
         routes.put("/api/beds", bedUrl);
+        routes.put("/api/notifications", notificationUrl);
     }
 
     @Override

@@ -13,7 +13,7 @@ Frontend (React + Vite)
         │  HTTP REST
         ▼
   API Gateway :8080          ← ponto único de entrada
-  JWT Validation + Routing
+  JWT Validation + Redis Cache + Routing
         │
    ┌────┼────────────────────────────┐
    │    │                            │
@@ -24,6 +24,9 @@ user  patient  triage  record    bed
    ▼              ▼
 PostgreSQL      Kafka
 (compartilhado)  (triage-events)
+        │
+       Redis
+   (cache L2)
 ```
 
 ---
@@ -38,12 +41,12 @@ PostgreSQL      Kafka
 
 | Serviço | Porta | Responsabilidade |
 |---|---|---|
-| `user-service` | 8081 | Autenticação, cadastro e perfil de usuários |
+| `user-service` | 8081 | Autenticação, cadastro e perfil de usuários (MEDICO / ENFERMEIRO / ADMIN) |
 | `patient-service` | 8082 | Cadastro e gestão de pacientes |
 | `triage-service` | 8083 | Triagem, sinais vitais e classificação de risco |
-| `record-service` | 8084 | Prontuários médicos |
+| `record-service` | 8084 | Prontuários médicos com diagnóstico e conduta |
 | `bed-service` | 8085 | Gestão e disponibilidade de leitos |
-| `api-gateway` | 8080 | Roteamento, autenticação JWT e CORS |
+| `api-gateway` | 8080 | Roteamento, autenticação JWT, cache Redis e CORS |
 
 **Cada serviço tem:**
 - Código-fonte isolado (`/user-service/src`, `/triage-service/src`, …)
@@ -111,15 +114,23 @@ Fluxo de autenticação:
 
 ### Cache Distribuído com Redis
 
-**Situação atual:** Redis não foi configurado no projeto. A disciplina cita cache distribuído como um dos modelos a serem utilizados.
+**O que foi implementado:** O API Gateway possui um `CacheFilter` que intercepta respostas GET e as armazena no Redis com TTL de 60 segundos. Isso reduz a carga nos microserviços para leituras repetidas (ex: listagem de pacientes, leitos, triagens).
 
-**O que seria a implementação:** O `bed-service` e o `patient-service` são candidatos naturais a cache — listagens de leitos disponíveis e dados de pacientes são lidos com frequência e mudam raramente. Com Spring Cache + Redis:
 ```java
-@Cacheable("leitos")
-public List<Bed> findAll() { … }
+// CacheFilter.java — API Gateway
+// GET /api/beds → verifica cache Redis antes de proxiar
+// Se cache hit: retorna resposta cacheada diretamente
+// Se cache miss: proxia para bed-service e armazena no Redis
 ```
 
-**Para apresentação:** É válido mencionar que a arquitetura suporta adição de Redis sem mudanças estruturais, pois os serviços são stateless e o acesso a dados já está centralizado nos repositories.
+**Por quê Redis no gateway e não nos serviços:**  
+Centralizar o cache no gateway evita duplicação de lógica — qualquer serviço que responda ao gateway se beneficia do cache sem precisar ser modificado.
+
+**Configuração:**
+```yaml
+spring.data.redis.host: ${REDIS_HOST:localhost}
+spring.data.redis.port: 6379
+```
 
 ### Peer-to-Peer
 
@@ -141,6 +152,7 @@ Todos os 5 microserviços expõem APIs REST com Spring Boot Web. O API Gateway u
 ```java
 // ProxyFilter.java — API Gateway roteando para os serviços
 routes.put("/api/auth",     userUrl);
+routes.put("/api/users",    userUrl);
 routes.put("/api/patients", patientUrl);
 routes.put("/api/triage",   triageUrl);
 routes.put("/api/records",  recordUrl);
@@ -152,13 +164,35 @@ routes.put("/api/beds",     bedUrl);
 | Método | Endpoint | Serviço | Descrição |
 |---|---|---|---|
 | POST | /api/auth/login | user-service | Autenticação |
+| GET/POST | /api/users | user-service | Listar e criar usuários |
+| GET | /api/users/staff | user-service | Listar corpo médico (MEDICO + ENFERMEIRO) |
+| GET | /api/users?perfil= | user-service | Filtrar usuários por perfil |
 | GET/POST | /api/patients | patient-service | Pacientes |
 | GET/POST | /api/triage | triage-service | Triagens |
-| PATCH | /api/triage/{id}/call | triage-service | Chamar paciente |
-| PATCH | /api/triage/{id}/finish | triage-service | Finalizar atendimento |
+| PATCH | /api/triage/{id}/assign | triage-service | Médico auto-atribui paciente (gera evento Kafka) |
+| PATCH | /api/triage/{id}/finish | triage-service | Finalizar atendimento (gera evento Kafka) |
 | GET/POST | /api/records | record-service | Prontuários |
 | GET/PUT | /api/beds | bed-service | Leitos |
-| GET/POST/DELETE | /api/users | user-service | Usuários |
+
+### Fluxo de Atendimento
+
+O fluxo de triagem segue o protocolo Manchester e o fluxo real de hospitais:
+
+```
+Enfermeira registra triagem → status: PENDENTE
+    → Evento Kafka: triage.created
+
+Médico visualiza fila ordenada por risco → auto-atribui paciente
+    → PATCH /api/triage/{id}/assign → status: EM_ATENDIMENTO
+    → Evento Kafka: patient.called
+
+Médico finaliza com prontuário (diagnóstico + conduta)
+    → POST /api/records + PATCH /api/triage/{id}/finish
+    → status: FINALIZADO
+    → Evento Kafka: triage.finalized
+```
+
+**Por que o médico auto-atribui (e não a enfermeira):** Reflete o fluxo real — a enfermeira classifica o risco, mas é o médico disponível que decide assumir o próximo caso. O status só muda quando o médico age, e é o evento Kafka `patient.called` que registra esse momento de forma auditável.
 
 ### Comunicação Síncrona — gRPC
 
@@ -168,7 +202,7 @@ routes.put("/api/beds",     bedUrl);
 
 ### Comunicação Assíncrona — Kafka
 
-**Por quê:** Eventos de triagem (paciente chegou, paciente foi chamado, atendimento finalizado) não precisam de resposta imediata. Kafka desacopla o produtor dos consumidores e garante durabilidade dos eventos.
+**Por quê:** Eventos de triagem (paciente chegou, médico assumiu, atendimento finalizado) não precisam de resposta imediata. Kafka desacopla o produtor dos consumidores e garante durabilidade dos eventos.
 
 **Implementação no triage-service:**
 
@@ -176,9 +210,9 @@ routes.put("/api/beds",     bedUrl);
 triage-service → Kafka (tópico: triage-events)
 
 Eventos publicados:
-  triage.created:{id}   → quando triagem é registrada
-  patient.called:{id}   → quando paciente é chamado
-  triage.finalized:{id} → quando atendimento é finalizado
+  triage.created:{id}   → quando triagem é registrada pela enfermeira
+  patient.called:{id}   → quando médico auto-atribui o paciente
+  triage.finalized:{id} → quando atendimento é finalizado com prontuário
 ```
 
 Configuração Kafka:
@@ -190,7 +224,7 @@ spring.kafka.producer.value-serializer=StringSerializer
 
 O tópico `triage-events` é criado automaticamente (`KAFKA_AUTO_CREATE_TOPICS_ENABLE=true`). O payload é o objeto `Triage` serializado em JSON.
 
-**Nota:** O projeto implementa o lado produtor. Consumidores (ex: notification-service para alertas) seriam a extensão natural.
+**Nota:** O projeto implementa o lado produtor. Consumidores (ex: notification-service para alertas em tempo real, audit-service para conformidade com LGPD) seriam a extensão natural.
 
 ### Comunicação Assíncrona — RabbitMQ
 
@@ -244,11 +278,11 @@ Isso demonstra o princípio de **falha isolada** — um serviço fora do ar não
 
 ### API Gateway
 
-**Por quê:** Em microserviços, o cliente não pode conhecer os endereços de cada serviço. O gateway é o ponto único de entrada que centraliza autenticação, roteamento e CORS.
+**Por quê:** Em microserviços, o cliente não pode conhecer os endereços de cada serviço. O gateway é o ponto único de entrada que centraliza autenticação, cache, roteamento e CORS.
 
 **Implementação com Spring WebFlux:**
 
-O gateway tem dois filtros em cadeia:
+O gateway tem três filtros em cadeia:
 
 **JwtAuthFilter (Order -100) — executa primeiro:**
 - Libera apenas `/api/auth/*` sem token
@@ -257,17 +291,25 @@ O gateway tem dois filtros em cadeia:
 - Retorna 401 para token ausente ou inválido
 - Trata preflight CORS (OPTIONS)
 
-**ProxyFilter (Order 0) — executa depois:**
+**CacheFilter (Order -50) — executa segundo:**
+- Intercepta requisições GET
+- Consulta Redis com chave baseada no path
+- Cache hit → retorna resposta diretamente (sem bater nos serviços)
+- Cache miss → deixa a requisição prosseguir e armazena a resposta com TTL de 60s
+- Invalida entradas de cache em requisições de escrita (POST/PUT/PATCH/DELETE)
+
+**ProxyFilter (Order 0) — executa por último:**
 - Faz o match do path para o serviço correto
 - Encaminha a requisição via `WebClient` (reativo, não-bloqueante)
 - Repassa headers e body sem transformação
 - Retorna 404 para rotas desconhecidas
 
 ```java
-// Exemplo do fluxo de um PATCH /api/triage/5/call
+// Exemplo do fluxo de um PATCH /api/triage/5/assign
 // 1. JwtAuthFilter valida JWT → OK
-// 2. ProxyFilter detecta prefixo "/api/triage" → encaminha para triage-service:8083
-// 3. triage-service processa e retorna Triage com status "Em Atendimento"
+// 2. CacheFilter: PATCH não usa cache → passa adiante
+// 3. ProxyFilter detecta prefixo "/api/triage" → encaminha para triage-service:8083
+// 4. triage-service muda status para EM_ATENDIMENTO, publica evento Kafka
 ```
 
 ### Service Discovery
@@ -288,16 +330,17 @@ api-gateway:
 
 ### Message Brokers — Kafka
 
-**Por quê:** Kafka como middleware garante que eventos de triagem sejam durável, ordenados e reprocessáveis — propriedades essenciais em sistemas de saúde onde auditoria é obrigatória.
+**Por quê:** Kafka como middleware garante que eventos de triagem sejam duráveis, ordenados e reprocessáveis — propriedades essenciais em sistemas de saúde onde auditoria é obrigatória.
 
 **Infraestrutura:**
 - **Zookeeper** — coordenação do cluster Kafka (metadados, eleição de líder)
 - **Kafka Broker** — armazena e distribui os eventos do tópico `triage-events`
 - Configurado com `replication-factor=1` (desenvolvimento) — em produção seria ≥ 3
 
-**Fluxo de evento:**
+**Fluxo de evento (finalização de atendimento):**
 ```
-Médico clica "Finalizar" no frontend
+Médico preenche diagnóstico e conduta → clica "Finalizar e Registrar"
+    → POST /api/records (prontuário criado com observacoes + conduta)
     → PATCH /api/triage/5/finish (REST síncrono)
     → API Gateway → triage-service
     → Status muda para FINALIZADO no PostgreSQL
@@ -315,8 +358,10 @@ Médico clica "Finalizar" no frontend
 | Spring WebFlux | 4.0.5 | API Gateway | Stack reativa: o gateway pode gerenciar muitas conexões simultâneas sem bloquear threads |
 | Spring Security | 4.0.5 | Autenticação no user-service | Integração nativa com JWT e gestão de usuários |
 | Spring Data JPA | 4.0.5 | Persistência em todos os serviços | Abstração do banco com repositórios tipados, sem SQL boilerplate |
+| Spring Data Redis | 4.0.5 | Cache L2 no API Gateway | Integração reativa com Redis via ReactiveRedisTemplate |
 | Spring Kafka | 4.0.5 | Produtor de eventos no triage-service | API declarativa para Kafka; integração com Spring Boot |
 | PostgreSQL | 16 | Banco de dados compartilhado | ACID, confiabilidade, suporte a tipos complexos |
+| Redis | 7 | Cache distribuído no API Gateway | Estrutura de dados em memória, TTL nativo, baixíssima latência |
 | Apache Kafka | 7.6.0 | Message broker para eventos de triagem | Durabilidade, ordenação, replay de eventos |
 | Apache Zookeeper | 7.6.0 | Coordenação do cluster Kafka | Gerenciamento de metadados e eleição de líder do Kafka |
 | JWT (JJWT) | 0.11.5 | Tokens de autenticação stateless | Sem estado no servidor: suporta escalabilidade horizontal |
@@ -333,14 +378,18 @@ Médico clica "Finalizar" no frontend
 2. **Deploy independente:** rebuildar apenas o `triage-service` (`docker compose up --build --no-deps triage-service`) sem tocar nos demais
 3. **Autenticação centralizada:** o gateway valida o JWT uma vez; os serviços internos confiam no header `X-User-Email`
 4. **Desacoplamento via eventos:** o triage-service não sabe quem vai consumir os eventos de triagem — novos consumidores podem ser adicionados sem modificar o produtor
-5. **Configuração por ambiente:** todas as credenciais e URLs são variáveis de ambiente, sem hardcode no código-fonte
+5. **Cache transparente no gateway:** o `CacheFilter` adiciona uma camada de cache Redis sem que nenhum microserviço precise ser modificado
+6. **Fluxo clínico real:** enfermeira classifica → fila ordenada por risco (Protocolo Manchester) → médico auto-atribui → finaliza com prontuário estruturado
+7. **Configuração por ambiente:** todas as credenciais e URLs são variáveis de ambiente, sem hardcode no código-fonte
 
 ---
 
 ## Pontos a Reforçar na Apresentação
 
-- O projeto **implementa a base sólida** de microserviços com REST + Kafka + API Gateway
-- A arquitetura **suporta extensões** sem refatoração estrutural: Redis para cache, Actuator para health checks, Eureka para service discovery
+- O projeto **implementa a base sólida** de microserviços com REST + Kafka + Redis + API Gateway
+- O **cache Redis está no gateway**, não nos serviços — decisão arquitetural que mantém os microserviços simples e adiciona performance de forma transversal
+- O **fluxo de triagem segue o protocolo Manchester**: enfermeira classifica, médico auto-atribui pelo risco — reflete uso real e não é apenas demonstração técnica
 - A escolha de **Kafka sobre RabbitMQ** foi deliberada: eventos de triagem têm característica de stream auditável, não de fila simples
 - O gateway com **WebFlux reativo** é uma decisão de performance: não bloqueia threads enquanto aguarda respostas dos serviços
 - **Enums com `@JsonValue`**: os status são type-safe no código Java, armazenados como string no banco, e transmitidos em formato legível na API — exemplo de decisão de design consciente
+- A arquitetura **suporta extensões** sem refatoração estrutural: Actuator para health checks programáticos, Eureka para service discovery dinâmico, novos consumidores Kafka para notificações e auditoria

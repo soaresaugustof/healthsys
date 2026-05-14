@@ -24,6 +24,10 @@ public class BedController {
         Bed bed = bedRepository.findById(id).orElseThrow();
         bed.setStatus(body.getStatus());
         bed.setPacienteId(body.getPacienteId());
+        bed.setPacienteNome(body.getPacienteNome());
+        bed.setMedicoId(body.getMedicoId());
+        bed.setMedicoNome(body.getMedicoNome());
+        bed.setProntuarioId(body.getProntuarioId());
         return bedRepository.save(bed);
     }
 }

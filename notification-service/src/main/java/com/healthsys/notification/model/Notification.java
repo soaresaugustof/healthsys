@@ -1,0 +1,26 @@
+package com.healthsys.notification.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+@Data
+@Entity
+@Table(name = "notificacoes")
+public class Notification {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String tipo;
+    private Long triageId;
+    private String patientName;
+    private String nivelRisco;
+
+    @Column(columnDefinition = "TEXT")
+    private String mensagem;
+
+    private boolean lida;
+    private LocalDateTime criadaEm;
+}

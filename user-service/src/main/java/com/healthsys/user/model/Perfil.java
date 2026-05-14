@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum Perfil {
     ADMIN("Admin"),
     MEDICO("Médico"),
-    ENFERMEIRO("Enfermeiro");
+    ENFERMEIRO("Enfermeiro"),
+    RECEPCIONISTA("Recepcionista"),
+    LABORATORISTA("Laboratorista");
 
     private final String label;
 

@@ -16,4 +16,8 @@ public class Bed {
     private BedStatus status;
 
     private String pacienteId;
+    private String pacienteNome;
+    private String medicoId;
+    private String medicoNome;
+    private String prontuarioId;
 }

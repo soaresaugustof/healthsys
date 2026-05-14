@@ -19,12 +19,13 @@ RUN chmod +x gradlew
 
 # Copia os build.gradle de todos os subprojetos
 # (Gradle precisa avaliar todos os módulos mesmo ao buildar apenas um)
-COPY api-gateway/build.gradle     api-gateway/build.gradle
-COPY user-service/build.gradle    user-service/build.gradle
-COPY patient-service/build.gradle patient-service/build.gradle
-COPY triage-service/build.gradle  triage-service/build.gradle
-COPY record-service/build.gradle  record-service/build.gradle
-COPY bed-service/build.gradle     bed-service/build.gradle
+COPY api-gateway/build.gradle          api-gateway/build.gradle
+COPY user-service/build.gradle         user-service/build.gradle
+COPY patient-service/build.gradle      patient-service/build.gradle
+COPY triage-service/build.gradle       triage-service/build.gradle
+COPY record-service/build.gradle       record-service/build.gradle
+COPY bed-service/build.gradle          bed-service/build.gradle
+COPY notification-service/build.gradle notification-service/build.gradle
 
 # Baixa dependências em camada separada (melhor cache do Docker)
 RUN ./gradlew dependencies --no-daemon -q 2>/dev/null || true

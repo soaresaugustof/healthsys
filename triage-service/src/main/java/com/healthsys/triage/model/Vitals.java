@@ -10,4 +10,10 @@ public class Vitals {
     private String heartRate;
     private String saturation;
     private String pressure;
+    private String respiratoryRate;
+    private String glucose;
+    private String painScale;
+    private String consciousnessLevel;
+    private String weight;
+    private String height;
 }

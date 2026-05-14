@@ -46,6 +46,16 @@ services:
       timeout: 10s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # ── MICROSERVIÇOS ────────────────────────────────────────────
 
   user-service:
@@ -137,6 +147,26 @@ services:
       DB_USERNAME: myuser
       DB_PASSWORD: secret
 
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: notification-service
+        SERVICE_PORT: 8086
+    ports:
+      - "8086:8086"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/healthsys
+      DB_USERNAME: myuser
+      DB_PASSWORD: secret
+      KAFKA_SERVERS: kafka:9092
+
   api-gateway:
     build:
       context: .
@@ -152,6 +182,8 @@ services:
       - triage-service
       - record-service
       - bed-service
+      - notification-service
+      - redis
     environment:
       JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
       USER_SERVICE_URL: http://user-service:8081
@@ -159,6 +191,8 @@ services:
       TRIAGE_SERVICE_URL: http://triage-service:8083
       RECORD_SERVICE_URL: http://record-service:8084
       BED_SERVICE_URL: http://bed-service:8085
+      NOTIFICATION_SERVICE_URL: http://notification-service:8086
+      REDIS_HOST: redis
 
 volumes:
   postgres_data:
