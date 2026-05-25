@@ -58,8 +58,7 @@ public class ProxyFilter implements WebFilter {
                 .orElse(null);
 
         if (targetBase == null) {
-            exchange.getResponse().setStatusCode(HttpStatus.NOT_FOUND);
-            return exchange.getResponse().setComplete();
+            return chain.filter(exchange);
         }
 
         ServerHttpRequest req = exchange.getRequest();
