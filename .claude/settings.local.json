@@ -28,7 +28,11 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(p['title']\\) for p in d.get\\('panels',[]\\)]\")",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('name:', d.get\\('name'\\)\\); print\\('scripts:', list\\(d.get\\('scripts',{}\\).keys\\(\\)\\)\\)\")",
       "Bash(rm -rf c:/Users/arqui/IdeaProjects/healthsys/frontend/.git c:/Users/arqui/IdeaProjects/healthsys/frontend/.claude c:/Users/arqui/IdeaProjects/healthsys/frontend/.vscode c:/Users/arqui/IdeaProjects/healthsys/frontend/.env c:/Users/arqui/IdeaProjects/healthsys/frontend/.env.example c:/Users/arqui/IdeaProjects/healthsys/frontend/.gitignore && echo \"Feito\")",
-      "Bash(sed -i 's|ghcr.io/OWNER/|ghcr.io/soaresaugustof/|g' c:/Users/arqui/IdeaProjects/healthsys/k8s/apps/*.yaml && grep \"image:\" c:/Users/arqui/IdeaProjects/healthsys/k8s/apps/*.yaml)"
+      "Bash(sed -i 's|ghcr.io/OWNER/|ghcr.io/soaresaugustof/|g' c:/Users/arqui/IdeaProjects/healthsys/k8s/apps/*.yaml && grep \"image:\" c:/Users/arqui/IdeaProjects/healthsys/k8s/apps/*.yaml)",
+      "Bash(git update-index *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\arqui\\IdeaProjects\\healthsys\\frontend\\.git",

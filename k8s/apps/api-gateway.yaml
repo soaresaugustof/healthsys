@@ -34,14 +34,15 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 40
             periodSeconds: 10
+            failureThreshold: 5
           livenessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 30
+            failureThreshold: 5
 ---
 # LoadBalancer exposes the gateway to external traffic.
 # On minikube: run `minikube service api-gateway -n healthsys` to get the URL.
