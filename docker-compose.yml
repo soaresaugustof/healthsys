@@ -92,6 +92,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/healthsys
       DB_USERNAME: myuser
       DB_PASSWORD: secret
+      JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
 
   triage-service:
     build:
@@ -112,6 +113,7 @@ services:
       DB_USERNAME: myuser
       DB_PASSWORD: secret
       KAFKA_SERVERS: kafka:9092
+      JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
 
   record-service:
     build:
@@ -125,10 +127,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/healthsys
       DB_USERNAME: myuser
       DB_PASSWORD: secret
+      KAFKA_SERVERS: kafka:9092
+      JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
 
   bed-service:
     build:
@@ -146,6 +152,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/healthsys
       DB_USERNAME: myuser
       DB_PASSWORD: secret
+      JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
 
   notification-service:
     build:
@@ -166,6 +173,7 @@ services:
       DB_USERNAME: myuser
       DB_PASSWORD: secret
       KAFKA_SERVERS: kafka:9092
+      JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
 
   api-gateway:
     build:
@@ -183,6 +191,8 @@ services:
       - record-service
       - bed-service
       - notification-service
+      - ai-service
+      - analytics-service
       - redis
     environment:
       JWT_SECRET: mySecretKeyForJWTGenerationThatIsLongEnough123456789
@@ -192,7 +202,115 @@ services:
       RECORD_SERVICE_URL: http://record-service:8084
       BED_SERVICE_URL: http://bed-service:8085
       NOTIFICATION_SERVICE_URL: http://notification-service:8086
+      AI_SERVICE_URL: http://ai-service:8087
+      ANALYTICS_SERVICE_URL: http://analytics-service:8088
       REDIS_HOST: redis
+
+  analytics-service:
+    build:
+      context: ./analytics-service
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: healthsys
+      DB_USER: myuser
+      DB_PASSWORD: secret
+      PORT: "8088"
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      PORT: "8087"
+
+  # ── ELK STACK ────────────────────────────────────────────────
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -qv '\"status\":\"red\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    volumes:
+      - ./monitoring/logstash:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000"
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # ── OBSERVABILIDADE ──────────────────────────────────────────
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=7d'
+    depends_on:
+      - user-service
+      - patient-service
+      - triage-service
+      - record-service
+      - bed-service
+      - notification-service
+      - api-gateway
+      - analytics-service
+      - ai-service
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    depends_on:
+      - prometheus
 
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:

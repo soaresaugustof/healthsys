@@ -58,8 +58,13 @@ public class JwtAuthFilter implements WebFilter {
 
         String authHeader = request.getHeaders().getFirst("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatusCode(HttpStatus.UNAUTHORIZED);
-            return response.setComplete();
+            String tokenParam = request.getQueryParams().getFirst("token");
+            if (tokenParam != null && !tokenParam.isBlank()) {
+                authHeader = "Bearer " + tokenParam;
+            } else {
+                response.setStatusCode(HttpStatus.UNAUTHORIZED);
+                return response.setComplete();
+            }
         }
 
         try {

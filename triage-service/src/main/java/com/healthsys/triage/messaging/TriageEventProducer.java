@@ -4,7 +4,6 @@ import com.healthsys.triage.model.Triage;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 public class TriageEventProducer {
@@ -32,13 +31,16 @@ public class TriageEventProducer {
     }
 
     private void sendEvent(String eventType, Triage triage) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                String payload = objectMapper.writeValueAsString(triage);
-                kafkaTemplate.send(TOPIC, eventType + ":" + triage.getId(), payload);
-            } catch (Exception e) {
-                System.err.println("[triage-service] Kafka event send failed: " + e.getMessage());
-            }
-        });
+        try {
+            String payload = objectMapper.writeValueAsString(triage);
+            kafkaTemplate.send(TOPIC, eventType + ":" + triage.getId(), payload)
+                    .whenComplete((result, ex) -> {
+                        if (ex != null) {
+                            System.err.println("[triage-service] Kafka send failed for " + eventType + ":" + triage.getId() + " -> " + ex.getMessage());
+                        }
+                    });
+        } catch (Exception e) {
+            System.err.println("[triage-service] Serialization failed for " + eventType + ":" + triage.getId() + " -> " + e.getMessage());
+        }
     }
 }

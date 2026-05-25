@@ -24,5 +24,7 @@ public class Prontuario {
     private LocalDateTime dataAlta;
 
     private String leitoId;
-    private String status; // AGUARDANDO_LEITO | ATIVO | ALTA
+
+    @Enumerated(EnumType.STRING)
+    private ProntuarioStatus status;
 }

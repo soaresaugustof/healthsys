@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: healthsys
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+        - name: analytics-service
+          image: ghcr.io/OWNER/healthsys-analytics-service:latest
+          ports:
+            - containerPort: 8088
+          envFrom:
+            - configMapRef:
+                name: healthsys-config
+            - secretRef:
+                name: healthsys-secret
+          env:
+            - name: PORT
+              value: "8088"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          readinessProbe:
+            tcpSocket:
+              port: 8088
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: healthsys
+spec:
+  selector:
+    app: analytics-service
+  ports:
+    - port: 8088
+      targetPort: 8088

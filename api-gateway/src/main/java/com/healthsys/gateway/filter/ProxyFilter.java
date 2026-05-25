@@ -32,7 +32,9 @@ public class ProxyFilter implements WebFilter {
             @Value("${TRIAGE_SERVICE_URL:http://localhost:8083}") String triageUrl,
             @Value("${RECORD_SERVICE_URL:http://localhost:8084}") String recordUrl,
             @Value("${BED_SERVICE_URL:http://localhost:8085}") String bedUrl,
-            @Value("${NOTIFICATION_SERVICE_URL:http://localhost:8086}") String notificationUrl) {
+            @Value("${NOTIFICATION_SERVICE_URL:http://localhost:8086}") String notificationUrl,
+            @Value("${AI_SERVICE_URL:http://localhost:8087}") String aiUrl,
+            @Value("${ANALYTICS_SERVICE_URL:http://localhost:8088}") String analyticsUrl) {
         this.webClient = builder.build();
         routes.put("/api/auth", userUrl);
         routes.put("/api/users", userUrl);
@@ -41,6 +43,8 @@ public class ProxyFilter implements WebFilter {
         routes.put("/api/records", recordUrl);
         routes.put("/api/beds", bedUrl);
         routes.put("/api/notifications", notificationUrl);
+        routes.put("/api/ai", aiUrl);
+        routes.put("/api/analytics", analyticsUrl);
     }
 
     @Override

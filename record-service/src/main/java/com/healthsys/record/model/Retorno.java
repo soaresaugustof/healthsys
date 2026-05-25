@@ -22,7 +22,8 @@ public class Retorno {
     @Column(columnDefinition = "TEXT")
     private String orientacoes;
 
-    private String status; // PENDENTE | REALIZADO | CANCELADO
+    @Enumerated(EnumType.STRING)
+    private RetornoStatus status;
 
     private LocalDateTime dataCriacao;
 }

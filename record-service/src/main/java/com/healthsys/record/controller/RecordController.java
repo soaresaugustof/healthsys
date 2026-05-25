@@ -4,6 +4,7 @@ import com.healthsys.record.dto.ProntuarioDetailResponse;
 import com.healthsys.record.model.Consulta;
 import com.healthsys.record.model.Exame;
 import com.healthsys.record.model.Prontuario;
+import com.healthsys.record.model.ProntuarioStatus;
 import com.healthsys.record.model.Retorno;
 import com.healthsys.record.service.ConsultaService;
 import com.healthsys.record.service.ExameService;
@@ -73,7 +74,7 @@ public class RecordController {
 
     @GetMapping("/internacoes/aguardando")
     public List<Prontuario> getPendingInternacoes() {
-        return prontuarioService.findByStatus("AGUARDANDO_LEITO");
+        return prontuarioService.findByStatus(ProntuarioStatus.AGUARDANDO_LEITO);
     }
 
     @PatchMapping("/internacoes/{id}/internar")

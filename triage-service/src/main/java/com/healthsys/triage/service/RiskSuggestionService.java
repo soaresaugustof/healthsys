@@ -20,30 +20,27 @@ public class RiskSuggestionService {
         return resultado;
     }
 
-    private NivelRisco avaliarTemperatura(String valor) {
-        if (valor == null || valor.isBlank()) return NivelRisco.AZUL;
-        double temp = Double.parseDouble(valor);
-        if (temp > 41 || temp < 35)        return NivelRisco.LARANJA;
-        if (temp > 40 || temp < 36)        return NivelRisco.AMARELO;
-        if (temp >= 38)                    return NivelRisco.VERDE;
+    private NivelRisco avaliarTemperatura(Double valor) {
+        if (valor == null) return NivelRisco.AZUL;
+        if (valor > 41 || valor < 35) return NivelRisco.LARANJA;
+        if (valor > 40 || valor < 36) return NivelRisco.AMARELO;
+        if (valor >= 38)              return NivelRisco.VERDE;
         return NivelRisco.AZUL;
     }
 
-    private NivelRisco avaliarFreqCardiaca(String valor) {
-        if (valor == null || valor.isBlank()) return NivelRisco.AZUL;
-        int fc = Integer.parseInt(valor);
-        if (fc < 40 || fc > 150)           return NivelRisco.VERMELHO;
-        if (fc < 50 || fc > 130)           return NivelRisco.LARANJA;
-        if (fc < 60 || fc > 100)           return NivelRisco.AMARELO;
+    private NivelRisco avaliarFreqCardiaca(Integer valor) {
+        if (valor == null) return NivelRisco.AZUL;
+        if (valor < 40 || valor > 150) return NivelRisco.VERMELHO;
+        if (valor < 50 || valor > 130) return NivelRisco.LARANJA;
+        if (valor < 60 || valor > 100) return NivelRisco.AMARELO;
         return NivelRisco.AZUL;
     }
 
-    private NivelRisco avaliarSaturacao(String valor) {
-        if (valor == null || valor.isBlank()) return NivelRisco.AZUL;
-        int sat = Integer.parseInt(valor);
-        if (sat < 90)                      return NivelRisco.VERMELHO;
-        if (sat < 95)                      return NivelRisco.LARANJA;
-        if (sat < 98)                      return NivelRisco.AMARELO;
+    private NivelRisco avaliarSaturacao(Integer valor) {
+        if (valor == null) return NivelRisco.AZUL;
+        if (valor < 90) return NivelRisco.VERMELHO;
+        if (valor < 95) return NivelRisco.LARANJA;
+        if (valor < 98) return NivelRisco.AMARELO;
         return NivelRisco.AZUL;
     }
 
@@ -58,30 +55,27 @@ public class RiskSuggestionService {
         return NivelRisco.AZUL;
     }
 
-    private NivelRisco avaliarFreqRespiratoria(String valor) {
-        if (valor == null || valor.isBlank()) return NivelRisco.AZUL;
-        int fr = Integer.parseInt(valor);
-        if (fr < 8 || fr > 30)   return NivelRisco.VERMELHO;
-        if (fr < 12 || fr > 25)  return NivelRisco.LARANJA;
-        if (fr > 20)             return NivelRisco.AMARELO;
+    private NivelRisco avaliarFreqRespiratoria(Integer valor) {
+        if (valor == null) return NivelRisco.AZUL;
+        if (valor < 8 || valor > 30)  return NivelRisco.VERMELHO;
+        if (valor < 12 || valor > 25) return NivelRisco.LARANJA;
+        if (valor > 20)               return NivelRisco.AMARELO;
         return NivelRisco.AZUL;
     }
 
-    private NivelRisco avaliarGlicemia(String valor) {
-        if (valor == null || valor.isBlank()) return NivelRisco.AZUL;
-        int glicemia = Integer.parseInt(valor);
-        if (glicemia < 50 || glicemia > 400) return NivelRisco.VERMELHO;
-        if (glicemia < 70 || glicemia > 250) return NivelRisco.LARANJA;
-        if (glicemia > 180)                  return NivelRisco.AMARELO;
+    private NivelRisco avaliarGlicemia(Double valor) {
+        if (valor == null) return NivelRisco.AZUL;
+        if (valor < 50 || valor > 400) return NivelRisco.VERMELHO;
+        if (valor < 70 || valor > 250) return NivelRisco.LARANJA;
+        if (valor > 180)               return NivelRisco.AMARELO;
         return NivelRisco.AZUL;
     }
 
-    private NivelRisco avaliarDor(String valor) {
-        if (valor == null || valor.isBlank()) return NivelRisco.AZUL;
-        int dor = Integer.parseInt(valor);
-        if (dor >= 9) return NivelRisco.LARANJA;
-        if (dor >= 7) return NivelRisco.AMARELO;
-        if (dor >= 4) return NivelRisco.VERDE;
+    private NivelRisco avaliarDor(Integer valor) {
+        if (valor == null) return NivelRisco.AZUL;
+        if (valor >= 9) return NivelRisco.LARANJA;
+        if (valor >= 7) return NivelRisco.AMARELO;
+        if (valor >= 4) return NivelRisco.VERDE;
         return NivelRisco.AZUL;
     }
 
@@ -95,7 +89,6 @@ public class RiskSuggestionService {
         };
     }
 
-    // Retorna o nível mais grave entre dois
     private NivelRisco pior(NivelRisco atual, NivelRisco candidato) {
         return candidato.ordinal() < atual.ordinal() ? candidato : atual;
     }

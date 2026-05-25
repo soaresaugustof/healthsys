@@ -4,7 +4,6 @@ import com.healthsys.record.model.Retorno;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 public class RetornoEventProducer {
@@ -20,13 +19,16 @@ public class RetornoEventProducer {
     }
 
     public void sendRetornoCreated(Retorno retorno) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                String payload = objectMapper.writeValueAsString(retorno);
-                kafkaTemplate.send(TOPIC, "retorno.created:" + retorno.getId(), payload);
-            } catch (Exception e) {
-                System.err.println("[record-service] Kafka event send failed: " + e.getMessage());
-            }
-        });
+        try {
+            String payload = objectMapper.writeValueAsString(retorno);
+            kafkaTemplate.send(TOPIC, "retorno.created:" + retorno.getId(), payload)
+                    .whenComplete((result, ex) -> {
+                        if (ex != null) {
+                            System.err.println("[record-service] Kafka retorno send failed: " + ex.getMessage());
+                        }
+                    });
+        } catch (Exception e) {
+            System.err.println("[record-service] Kafka retorno serialization failed: " + e.getMessage());
+        }
     }
 }

@@ -14,7 +14,10 @@ public class Notification {
     private Long id;
 
     private String tipo;
-    private Long triageId;
+
+    @Column(name = "triage_id")
+    private Long refId;
+
     private String patientName;
     private String nivelRisco;
 
@@ -23,4 +26,7 @@ public class Notification {
 
     private boolean lida;
     private LocalDateTime criadaEm;
+
+    private String destinatarioPerfil;
+    private String destinatarioNome;
 }

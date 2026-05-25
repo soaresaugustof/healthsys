@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bed-service
+  namespace: healthsys
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bed-service
+  template:
+    metadata:
+      labels:
+        app: bed-service
+    spec:
+      containers:
+        - name: bed-service
+          image: ghcr.io/OWNER/healthsys-bed-service:latest
+          ports:
+            - containerPort: 8085
+          envFrom:
+            - configMapRef:
+                name: healthsys-config
+            - secretRef:
+                name: healthsys-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8085
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8085
+            initialDelaySeconds: 60
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bed-service
+  namespace: healthsys
+spec:
+  selector:
+    app: bed-service
+  ports:
+    - port: 8085
+      targetPort: 8085

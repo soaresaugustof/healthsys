@@ -2,6 +2,7 @@ package com.healthsys.record.service;
 
 import com.healthsys.record.messaging.RetornoEventProducer;
 import com.healthsys.record.model.Retorno;
+import com.healthsys.record.model.RetornoStatus;
 import com.healthsys.record.repository.RetornoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,11 +26,11 @@ public class RetornoService {
     }
 
     public List<Retorno> findPendentes() {
-        return repository.findByStatusOrderByDataCriacaoDesc("PENDENTE");
+        return repository.findByStatusOrderByDataCriacaoDesc(RetornoStatus.PENDENTE);
     }
 
     public Retorno create(Retorno retorno) {
-        retorno.setStatus("PENDENTE");
+        retorno.setStatus(RetornoStatus.PENDENTE);
         retorno.setDataCriacao(LocalDateTime.now());
         Retorno saved = repository.save(retorno);
         eventProducer.sendRetornoCreated(saved);
@@ -39,14 +40,14 @@ public class RetornoService {
     public Retorno realizar(Long id) {
         Retorno r = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Retorno não encontrado"));
-        r.setStatus("REALIZADO");
+        r.setStatus(RetornoStatus.REALIZADO);
         return repository.save(r);
     }
 
     public Retorno cancelar(Long id) {
         Retorno r = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Retorno não encontrado"));
-        r.setStatus("CANCELADO");
+        r.setStatus(RetornoStatus.CANCELADO);
         return repository.save(r);
     }
 }

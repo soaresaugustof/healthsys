@@ -22,8 +22,8 @@ public class Exame {
     @Column(columnDefinition = "TEXT")
     private String justificativa;
 
-    // SOLICITADO | EM_ANDAMENTO | CONCLUIDO | CANCELADO
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ExameStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String resultado;

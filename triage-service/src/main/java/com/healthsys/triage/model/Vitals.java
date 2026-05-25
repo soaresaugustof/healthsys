@@ -6,14 +6,14 @@ import lombok.Data;
 @Data
 @Embeddable
 public class Vitals {
-    private String temp;
-    private String heartRate;
-    private String saturation;
-    private String pressure;
-    private String respiratoryRate;
-    private String glucose;
-    private String painScale;
-    private String consciousnessLevel;
-    private String weight;
-    private String height;
+    private Double  temp;
+    private Integer heartRate;
+    private Integer saturation;
+    private String  pressure;           // "120/80" — valor composto, mantém String
+    private Integer respiratoryRate;
+    private Double  glucose;
+    private Integer painScale;
+    private String  consciousnessLevel; // texto livre (Alerta, Voz, Dor, Irresponsivo)
+    private Double  weight;
+    private Double  height;
 }
