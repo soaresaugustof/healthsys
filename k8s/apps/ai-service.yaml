@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ai-service
-          image: ghcr.io/OWNER/healthsys-ai-service:latest
+          image: ghcr.io/soaresaugustof/healthsys-ai-service:latest
           ports:
             - containerPort: 8087
           env:

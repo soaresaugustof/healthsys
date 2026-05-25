@@ -168,10 +168,9 @@ jobs:
       - name: Update image tags in manifests
         run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          OWNER="${{ github.repository_owner }}"
           for svc in user-service patient-service triage-service record-service \
                      bed-service notification-service api-gateway analytics-service ai-service; do
-            sed -i "s|ghcr.io/OWNER/healthsys-${svc}:latest|ghcr.io/${OWNER}/healthsys-${svc}:${SHORT_SHA}|g" \
+            sed -i "s|healthsys-${svc}:latest|healthsys-${svc}:${SHORT_SHA}|g" \
               k8s/apps/${svc}.yaml || true
           done
 

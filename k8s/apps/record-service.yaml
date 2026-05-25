@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: record-service
-          image: ghcr.io/OWNER/healthsys-record-service:latest
+          image: ghcr.io/soaresaugustof/healthsys-record-service:latest
           ports:
             - containerPort: 8084
           envFrom:

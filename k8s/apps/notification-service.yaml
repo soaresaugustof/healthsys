@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: ghcr.io/OWNER/healthsys-notification-service:latest
+          image: ghcr.io/soaresaugustof/healthsys-notification-service:latest
           ports:
             - containerPort: 8086
           envFrom:
