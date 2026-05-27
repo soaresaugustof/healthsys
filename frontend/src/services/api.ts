@@ -1,6 +1,6 @@
 import type { Patient, Triagem, Leito, StaffMember, Notification, Consulta, Prontuario, ProntuarioDetail, Retorno, Exame } from '../types/hospital';
 
-const BASE_URL = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:8080';
+const BASE_URL = (import.meta as any).env?.VITE_API_URL ?? '';
 const TOKEN_KEY = 'healthsys_token';
 
 export const getToken = (): string | null => localStorage.getItem(TOKEN_KEY);
