@@ -105,7 +105,6 @@ jobs:
             file: Dockerfile
             build_args: "SERVICE_NAME=api-gateway\nSERVICE_PORT=8080"
 
-          # Python microservices — each has its own Dockerfile
           - name: analytics-service
             context: ./analytics-service
             file: analytics-service/Dockerfile
@@ -150,9 +149,6 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
-  # ── Deploy to Kubernetes (acionado manualmente) ──────────────
-  # Para usar: GitHub → Actions → CI/CD Pipeline → Run workflow
-  # Pré-requisito: adicionar secret KUBECONFIG em Settings → Secrets
   deploy:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
