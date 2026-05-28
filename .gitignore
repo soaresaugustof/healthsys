@@ -1,4 +1,6 @@
 HELP.md
+sa-key.json
+*.json.key
 .gradle
 .claude/
 build/

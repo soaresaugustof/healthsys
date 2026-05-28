@@ -19,6 +19,9 @@ data:
   # Redis
   REDIS_HOST: redis
 
+  # CORS — origens permitidas pelo api-gateway
+  ALLOWED_ORIGINS: https://healthsys-olrtkhpv6-augusto-soares-projects-26a59e8a.vercel.app
+
   # Downstream service URLs (api-gateway)
   USER_SERVICE_URL: http://user-service:8081
   PATIENT_SERVICE_URL: http://patient-service:8082

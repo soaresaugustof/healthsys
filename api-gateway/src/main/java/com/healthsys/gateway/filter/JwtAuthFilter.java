@@ -25,8 +25,11 @@ public class JwtAuthFilter implements WebFilter {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
+    @Value("${ALLOWED_ORIGINS:}")
+    private String allowedOriginsEnv;
+
     private static final List<String> PUBLIC_PATHS = List.of("/api/auth/", "/actuator/");
-    private static final List<String> ALLOWED_ORIGINS = List.of(
+    private static final List<String> BASE_ORIGINS = List.of(
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:4173"
@@ -37,8 +40,15 @@ public class JwtAuthFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
         ServerHttpResponse response = exchange.getResponse();
 
+        List<String> allowedOrigins = new java.util.ArrayList<>(BASE_ORIGINS);
+        if (allowedOriginsEnv != null && !allowedOriginsEnv.isBlank()) {
+            for (String o : allowedOriginsEnv.split(",")) {
+                String trimmed = o.trim();
+                if (!trimmed.isEmpty()) allowedOrigins.add(trimmed);
+            }
+        }
         String origin = request.getHeaders().getFirst("Origin");
-        if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
+        if (origin != null && allowedOrigins.contains(origin)) {
             response.getHeaders().set("Access-Control-Allow-Origin", origin);
             response.getHeaders().set("Access-Control-Allow-Credentials", "true");
         }
