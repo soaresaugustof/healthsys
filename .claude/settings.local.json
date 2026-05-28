@@ -32,7 +32,20 @@
       "Bash(git update-index *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(gcloud auth *)",
+      "Bash(kubectl get *)",
+      "Bash(kubectl logs *)",
+      "Bash(kubectl delete *)",
+      "Bash(kubectl apply *)",
+      "Bash(kubectl rollout *)",
+      "Bash(Start-Sleep -Seconds 30)",
+      "Bash(kubectl wait *)",
+      "Bash(kubectl describe *)",
+      "Bash(python3 -c ' *)",
+      "Bash(kubectl scale *)",
+      "Bash(kubectl patch *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://35.232.57.5/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@healthsys.com\",\"senha\":\"admin123\"}')"
     ],
     "additionalDirectories": [
       "c:\\Users\\arqui\\IdeaProjects\\healthsys\\frontend\\.git",

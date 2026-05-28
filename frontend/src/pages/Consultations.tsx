@@ -124,7 +124,7 @@ export const Consultations = () => {
         <div>
           <h1 className="text-[28px] font-bold text-[#1e293b] tracking-[-0.5px]">Consultas</h1>
           <p className="text-[#64748b]">
-            {me ? `Dr(a). ${me.nome} — selecione um paciente para iniciar o atendimento.` : 'Painel de atendimento médico.'}
+            {me ? `Dr(a). ${me.nome}, selecione um paciente para iniciar o atendimento.` : 'Painel de atendimento médico.'}
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-sm font-medium">

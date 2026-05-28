@@ -1,25 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <springProperty scope="context" name="serviceName" source="spring.application.name" defaultValue="unknown-service"/>
-    <springProperty scope="context" name="logstashHost" source="logstash.host" defaultValue="logstash"/>
-
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"service":"${serviceName}"}</customFields>
-        </encoder>
-    </appender>
-
-    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>${logstashHost}:5000</destination>
-        <reconnectionDelay>10 seconds</reconnectionDelay>
-        <keepAliveDuration>5 minutes</keepAliveDuration>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"service":"${serviceName}"}</customFields>
-        </encoder>
-    </appender>
-
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOGSTASH"/>
     </root>
 </configuration>

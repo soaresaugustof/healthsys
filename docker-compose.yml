@@ -231,45 +231,6 @@ services:
     environment:
       PORT: "8087"
 
-  # ── ELK STACK ────────────────────────────────────────────────
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    ports:
-      - "9200:9200"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -qv '\"status\":\"red\"'"]
-      interval: 20s
-      timeout: 10s
-      retries: 10
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.13.0
-    volumes:
-      - ./monitoring/logstash:/usr/share/logstash/pipeline:ro
-    ports:
-      - "5000:5000"
-    environment:
-      - LS_JAVA_OPTS=-Xms256m -Xmx256m
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.13.0
-    ports:
-      - "5601:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
 
   # ── OBSERVABILIDADE ──────────────────────────────────────────
 
@@ -313,4 +274,3 @@ volumes:
   postgres_data:
   prometheus_data:
   grafana_data:
-  elasticsearch_data:
