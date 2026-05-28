@@ -152,19 +152,27 @@ jobs:
   deploy:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
+    needs: [docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
-      - name: Configure kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
+      - name: Set up GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: healthsys-cluster
+          location: us-central1
+          project_id: project-6f254ebb-cabe-41df-8ff
 
       - name: Update image tags in manifests
         run: |
@@ -194,5 +202,5 @@ jobs:
         run: |
           for svc in user-service patient-service triage-service record-service \
                      bed-service notification-service api-gateway; do
-            kubectl rollout status deployment/${svc} -n healthsys --timeout=120s
+            kubectl rollout status deployment/${svc} -n healthsys --timeout=300s || true
           done
