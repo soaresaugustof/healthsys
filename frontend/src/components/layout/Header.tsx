@@ -64,12 +64,17 @@ export const Header = ({ setSidebarOpen, user, staffMember, onNavigate }: Header
   useEffect(() => {
     fetchNotifications();
 
+    // Polling as primary fallback (works on Vercel where SSE rewrites are not supported)
+    const pollInterval = setInterval(fetchNotifications, 30_000);
+
     const SSE_BASE = (import.meta as any).env?.VITE_API_URL ?? '';
     const token = localStorage.getItem('healthsys_token');
     const sseUrl = `${SSE_BASE}/api/notifications/subscribe${token ? `?token=${encodeURIComponent(token)}` : ''}`;
     const es = new EventSource(sseUrl);
+    let sseActive = false;
 
     es.addEventListener('notification', (e: MessageEvent) => {
+      sseActive = true;
       try {
         const incoming: Notification = JSON.parse(e.data);
         const normalized: Notification = {
@@ -86,10 +91,13 @@ export const Header = ({ setSidebarOpen, user, staffMember, onNavigate }: Header
     });
 
     es.onerror = () => {
-      fetchNotifications();
+      if (!sseActive) es.close(); // SSE unavailable (e.g. Vercel), polling handles it
     };
 
-    return () => es.close();
+    return () => {
+      es.close();
+      clearInterval(pollInterval);
+    };
   }, [fetchNotifications]);
 
   useEffect(() => {
