@@ -27,7 +27,7 @@ spec:
                 name: healthsys-secret
           resources:
             requests:
-              memory: "200Mi"
+              memory: "128Mi"
               cpu: "100m"
             limits:
               memory: "512Mi"

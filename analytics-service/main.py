@@ -24,21 +24,20 @@ RISCO_MAP = {
     'VERDE':    3, 'Verde':    3, 'verde':    3,
     'AZUL':     4, 'Azul':     4, 'azul':     4,
 }
-RISCO_LABELS  = ['Vermelho', 'Laranja', 'Amarelo', 'Verde', 'Azul']
-RISCO_COLORS  = {
-    'Vermelho': '#f43f5e',
-    'Laranja':  '#f97316',
-    'Amarelo':  '#fbbf24',
-    'Verde':    '#10b981',
-    'Azul':     '#3b82f6',
+RISCO_LABELS = ['Vermelho', 'Laranja', 'Amarelo', 'Verde', 'Azul']
+RISCO_COLORS = {
+    'Vermelho': '#f43f5e', 'Laranja': '#f97316',
+    'Amarelo': '#fbbf24', 'Verde': '#10b981', 'Azul': '#3b82f6',
 }
 
 model_loaded = False
+
 
 def encode_risk(r) -> int:
     if isinstance(r, int):
         return r if 0 <= r <= 4 else -1
     return RISCO_MAP.get(str(r), -1)
+
 
 def get_model():
     global model_loaded
@@ -60,38 +59,28 @@ def health():
 def classify():
     if 'imagem' not in request.files:
         return jsonify({'error': 'Nenhuma imagem enviada'}), 400
-
     file = request.files['imagem']
     if not file or not file.filename:
         return jsonify({'error': 'Arquivo inválido'}), 400
-
     temp_path = None
     try:
         suffix = os.path.splitext(file.filename)[1] or '.png'
         fd, temp_path = tempfile.mkstemp(suffix=suffix)
         os.close(fd)
         file.save(temp_path)
-
         img = clf.preprocess_image_with_generator(temp_path, target_size=(320, 320))
         model = get_model()
         predictions = model.predict(img)
-
         diagnostico = clf.labels[np.argmax(predictions[0])]
         probabilidade = float(np.max(predictions[0]))
-
         return jsonify({
             'diagnostico': diagnostico,
             'probabilidade': f'{probabilidade * 100:.2f}%',
-            'detalhes': {
-                label: f'{float(p * 100):.2f}%'
-                for label, p in zip(clf.labels, predictions[0])
-            }
+            'detalhes': {label: f'{float(p * 100):.2f}%' for label, p in zip(clf.labels, predictions[0])}
         }), 200
-
     except Exception as e:
         print(f'[data-service] Erro na classificação: {e}')
         return jsonify({'error': str(e)}), 500
-
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
@@ -119,14 +108,11 @@ def overview():
         cur.execute("SELECT COUNT(*) FROM exames WHERE status = 'SOLICITADO'")
         exames_pendentes = cur.fetchone()[0]
         return jsonify({
-            'totalPacientes':    total_pacientes,
-            'totalTriagens':     total_triagens,
-            'triagensHoje':      triagens_hoje,
-            'internacoesAtivas': internacoes_ativas,
-            'totalLeitos':       total_leitos,
-            'leitosOcupados':    leitos_ocupados,
-            'ocupacaoLeitos':    round(leitos_ocupados / total_leitos * 100, 1) if total_leitos else 0,
-            'examesPendentes':   exames_pendentes,
+            'totalPacientes': total_pacientes, 'totalTriagens': total_triagens,
+            'triagensHoje': triagens_hoje, 'internacoesAtivas': internacoes_ativas,
+            'totalLeitos': total_leitos, 'leitosOcupados': leitos_ocupados,
+            'ocupacaoLeitos': round(leitos_ocupados / total_leitos * 100, 1) if total_leitos else 0,
+            'examesPendentes': exames_pendentes,
         })
     finally:
         conn.close()
@@ -137,12 +123,7 @@ def triage_distribuicao():
     conn = db.get_conn()
     try:
         cur = conn.cursor()
-        cur.execute("""
-            SELECT nivel_risco, COUNT(*) AS total
-            FROM triagens
-            GROUP BY nivel_risco
-            ORDER BY total DESC
-        """)
+        cur.execute("SELECT nivel_risco, COUNT(*) AS total FROM triagens GROUP BY nivel_risco ORDER BY total DESC")
         rows = cur.fetchall()
         result = []
         for risk, count in rows:
@@ -159,11 +140,9 @@ def triage_volume():
     try:
         cur = conn.cursor()
         cur.execute("""
-            SELECT data::date AS dia, COUNT(*) AS total
-            FROM triagens
+            SELECT data::date AS dia, COUNT(*) AS total FROM triagens
             WHERE data >= CURRENT_DATE - INTERVAL '30 days'
-            GROUP BY dia
-            ORDER BY dia
+            GROUP BY dia ORDER BY dia
         """)
         rows = cur.fetchall()
         historico = [{'data': str(r[0]), 'total': int(r[1])} for r in rows]
@@ -179,8 +158,7 @@ def triage_volume():
         k = min(3, len(X_lag))
         knn = KNN(k=k, task='regression')
         knn.fit(X_lag, y_lag)
-        buf_reg = list(y)
-        buf_knn = list(y)
+        buf_reg, buf_knn = list(y), list(y)
         projecao = []
         for i in range(7):
             x_reg = np.array([[buf_reg[-j] for j in range(1, N_LAGS + 1)]])
@@ -189,9 +167,10 @@ def triage_volume():
             pred_knn = max(0.0, float(knn.predict(x_knn)[0]))
             buf_reg.append(pred_reg)
             buf_knn.append(pred_knn)
-            dia = ultima_data + timedelta(days=i + 1)
-            projecao.append({'data': str(dia), 'regressaoLinear': round(pred_reg, 1), 'knn': round(pred_knn, 1)})
-        return jsonify({'historico': historico, 'projecao': projecao, 'modelos': f'AR({N_LAGS}) — Regressão Linear e KNN k={k}'})
+            projecao.append({'data': str(ultima_data + timedelta(days=i + 1)),
+                             'regressaoLinear': round(pred_reg, 1), 'knn': round(pred_knn, 1)})
+        return jsonify({'historico': historico, 'projecao': projecao,
+                        'modelos': f'AR({N_LAGS}) — Regressão Linear e KNN k={k}'})
     finally:
         conn.close()
 
@@ -202,10 +181,7 @@ def triage_risco_hora():
     try:
         cur = conn.cursor()
         cur.execute("""
-            SELECT EXTRACT(HOUR FROM data)::int AS hora,
-                   EXTRACT(DOW  FROM data)::int AS dow,
-                   nivel_risco
-            FROM triagens
+            SELECT EXTRACT(HOUR FROM data)::int, EXTRACT(DOW FROM data)::int, nivel_risco FROM triagens
         """)
         rows = cur.fetchall()
         samples = [(int(h), int(d), encode_risk(r)) for h, d, r in rows if encode_risk(r) >= 0]
@@ -217,8 +193,7 @@ def triage_risco_hora():
         k = min(5, len(samples))
         knn = KNN(k=k, task='classification')
         knn.fit(X_train, y_train)
-        X_pred = np.array([[h, today_dow] for h in range(24)])
-        preds = knn.predict(X_pred)
+        preds = knn.predict(np.array([[h, today_dow] for h in range(24)]))
         resultado = []
         for hora, pred in enumerate(preds):
             idx = int(pred)
@@ -236,23 +211,17 @@ def beds_ocupacao():
         cur = conn.cursor()
         cur.execute("""
             SELECT setor,
-                   COUNT(*) FILTER (WHERE status = 'DISPONIVEL') AS disponiveis,
-                   COUNT(*) FILTER (WHERE status = 'OCUPADO')    AS ocupados,
-                   COUNT(*) FILTER (WHERE status = 'MANUTENCAO') AS manutencao,
-                   COUNT(*)                                       AS total
-            FROM leitos
-            GROUP BY setor
-            ORDER BY setor
+                   COUNT(*) FILTER (WHERE status = 'DISPONIVEL'),
+                   COUNT(*) FILTER (WHERE status = 'OCUPADO'),
+                   COUNT(*) FILTER (WHERE status = 'MANUTENCAO'),
+                   COUNT(*)
+            FROM leitos GROUP BY setor ORDER BY setor
         """)
         rows = cur.fetchall()
-        result = []
-        for setor, disp, ocup, manut, total in rows:
-            result.append({
-                'setor': setor, 'disponiveis': int(disp), 'ocupados': int(ocup),
-                'manutencao': int(manut), 'total': int(total),
-                'pctOcupacao': round(int(ocup) / int(total) * 100, 1) if total else 0,
-            })
-        return jsonify(result)
+        return jsonify([{
+            'setor': s, 'disponiveis': int(d), 'ocupados': int(o), 'manutencao': int(m), 'total': int(t),
+            'pctOcupacao': round(int(o) / int(t) * 100, 1) if t else 0,
+        } for s, d, o, m, t in rows])
     finally:
         conn.close()
 
@@ -263,9 +232,8 @@ def exames_diagnosticos():
     try:
         cur = conn.cursor()
         cur.execute("SELECT resultado FROM exames WHERE resultado LIKE '%Diagnóstico principal:%'")
-        rows = cur.fetchall()
         contagem: dict[str, int] = {}
-        for (resultado,) in rows:
+        for (resultado,) in cur.fetchall():
             if not resultado:
                 continue
             for line in resultado.split('\n'):
