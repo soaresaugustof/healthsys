@@ -106,13 +106,8 @@ jobs:
             build_args: "SERVICE_NAME=api-gateway\nSERVICE_PORT=8080"
 
           - name: analytics-service
-            context: ./analytics-service
+            context: .
             file: analytics-service/Dockerfile
-            build_args: ""
-
-          - name: ai-service
-            context: ./ai-service
-            file: ai-service/Dockerfile
             build_args: ""
 
     steps:

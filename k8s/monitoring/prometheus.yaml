@@ -49,11 +49,6 @@ data:
         metrics_path: /metrics
         static_configs:
           - targets: ['analytics-service:8088']
-
-      - job_name: ai-service
-        metrics_path: /metrics
-        static_configs:
-          - targets: ['ai-service:8087']
 ---
 apiVersion: apps/v1
 kind: Deployment

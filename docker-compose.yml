@@ -191,7 +191,6 @@ services:
       - record-service
       - bed-service
       - notification-service
-      - ai-service
       - analytics-service
       - redis
     environment:
@@ -202,14 +201,14 @@ services:
       RECORD_SERVICE_URL: http://record-service:8084
       BED_SERVICE_URL: http://bed-service:8085
       NOTIFICATION_SERVICE_URL: http://notification-service:8086
-      AI_SERVICE_URL: http://ai-service:8087
+      AI_SERVICE_URL: http://analytics-service:8088
       ANALYTICS_SERVICE_URL: http://analytics-service:8088
       REDIS_HOST: redis
 
   analytics-service:
     build:
-      context: ./analytics-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: analytics-service/Dockerfile
     ports:
       - "8088:8088"
     depends_on:
@@ -221,15 +220,6 @@ services:
       DB_USER: myuser
       DB_PASSWORD: secret
       PORT: "8088"
-
-  ai-service:
-    build:
-      context: ./ai-service
-      dockerfile: Dockerfile
-    ports:
-      - "8087:8087"
-    environment:
-      PORT: "8087"
 
 
   # ── OBSERVABILIDADE ──────────────────────────────────────────
