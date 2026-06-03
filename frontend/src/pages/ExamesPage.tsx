@@ -234,10 +234,11 @@ export const ExamesPage = () => {
                     )}
                     {exame.status === 'EM_ANDAMENTO' && (
                       <>
+                        {/raio[\s-]*x|radiografia|rx\b|x[-\s]*ray/i.test(exame.tipoExame) && (
                         <button
                           onClick={e => { e.stopPropagation(); handleAiClick(exame); }}
                           disabled={aiLoading === exame.id}
-                          title="Classificar imagem com IA"
+                          title="Classificar imagem com IA (apenas Raio-X)"
                           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors disabled:opacity-50"
                         >
                           {aiLoading === exame.id
@@ -245,6 +246,7 @@ export const ExamesPage = () => {
                             : <BrainCircuit size={12} />}
                           {aiLoading === exame.id ? 'Analisando...' : 'Analisar com IA'}
                         </button>
+                        )}
                         <button
                           onClick={e => { e.stopPropagation(); setModal({ exame, resultado: '', tecnico: '' }); }}
                           className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
