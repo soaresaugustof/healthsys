@@ -65,7 +65,9 @@ export const Header = ({ setSidebarOpen, user, staffMember, onNavigate }: Header
     fetchNotifications();
 
     const SSE_BASE = (import.meta as any).env?.VITE_API_URL ?? '';
-    const es = new EventSource(`${SSE_BASE}/api/notifications/subscribe`);
+    const token = localStorage.getItem('healthsys_token');
+    const sseUrl = `${SSE_BASE}/api/notifications/subscribe${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    const es = new EventSource(sseUrl);
 
     es.addEventListener('notification', (e: MessageEvent) => {
       try {
