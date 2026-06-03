@@ -64,7 +64,7 @@ export const Header = ({ setSidebarOpen, user, staffMember, onNavigate }: Header
   useEffect(() => {
     fetchNotifications();
 
-    const SSE_BASE = (import.meta as any).env?.VITE_SSE_URL ?? 'http://localhost:8086';
+    const SSE_BASE = (import.meta as any).env?.VITE_API_URL ?? '';
     const es = new EventSource(`${SSE_BASE}/api/notifications/subscribe`);
 
     es.addEventListener('notification', (e: MessageEvent) => {
